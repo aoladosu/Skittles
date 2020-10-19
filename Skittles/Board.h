@@ -1,5 +1,6 @@
 #pragma once
 #include "ChessPiece.h"
+#include "MoveList.h"
 
 class Board
 {
@@ -35,10 +36,13 @@ private:
     const int WKCASTLE = 6;
     int specialMove = NOSPECIAL;
     int promotionPos[2] = { -2, -2 };
+    int promoTo;                                          // piece promoted to
 
     bool MATE = false;									// endgame conditions
     int toPlay = WHITE;									// what side is playing
     int bkPos[2] = {0, 4}, wkPos[2] = {7, 4};			// king positions
+    ChessPiece captured;                                // piece that is captured by move
+    MoveList moveList;                                  // store moves played
 
     // the board
     ChessPiece board[8][8];
@@ -48,13 +52,14 @@ public:
     ~Board();
     void init();
     int value();
-    bool validate(BSTR move);
-    bool strToNum(BSTR move, int &startRow, int &endRow, int &startCol, int &endcol);
+    bool validate(int start, int end);
     void switchToPlay();
     int getSpecial();
     bool gameOver();
     int getWinner();
     bool promote(int pieceNameVal);
+    void goBack(int &start, int &end, int &special, int &promoPiece, int &capturedPiece);
+    void goForward(int &start, int &end, int &special, int &promoPiece, int &capturedPiece);
 
 private:
     bool pawnMoveValid(ChessPiece pawn, int startRow, int endRow, int startCol, int endCol);
@@ -67,7 +72,10 @@ private:
     bool isChecked(int row, int col, ChessPiece cboard[8][8], int color, int rowList[], int colList[]);
     bool isMate(int row, int col, ChessPiece cboard[8][8], int rowList[], int colList[]);
     bool isPawnLos(int row, int col, ChessPiece cboard[8][8], int color);
+    bool numToRowCol(int start, int end, int &startRow, int &endRow, int &startCol, int &endcol);
+    int rowColToNum(int row, int col);
     bool inBounds(int row, int col);
     bool areEqual(int arr1[2], int arr2[2]);
     bool assignArray(int arr[2], int val1, int val2);
+    void addMove(int start, int end);
 };

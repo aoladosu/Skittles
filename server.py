@@ -7,7 +7,8 @@ class MyWebServer(socketserver.BaseRequestHandler):
 
     status = {200: "HTTP/1.1 200 OK\r\n", 404:"HTTP/1.1 404 Page Not Found\r\n", 405:"HTTP/1.1 405 Method Not Allowed\r\n", 301:"HTTP/1.1 301 Page Moved\r\n"}
     hostname = "127.0.0.1:8000"
-    absPath = os.path.abspath("Skittles/")
+    folder = "build-Skittles-Qt_5_15_1_WebAssembly-Debug"
+    absPath = os.path.abspath(folder+"/")
     
     
     def handle(self):
@@ -34,6 +35,9 @@ class MyWebServer(socketserver.BaseRequestHandler):
     def get(self, statusCode):    
          
         if (statusCode == 0):
+            print("Returned:")
+            print("-----------------")
+            print()
             return bytearray('','utf-8')
         
         # headers
@@ -68,10 +72,10 @@ class MyWebServer(socketserver.BaseRequestHandler):
             else:
                 try:
                     # open file to send
-                    self.verify('/Skittles'+statusCode)
+                    self.verify('/'+MyWebServer.folder+statusCode)
                     toOpen = (MyWebServer.absPath + statusCode).replace('\\','/')
                     body = open(toOpen,'rb').read()
-                    print("sending file: " + toOpen)
+                    print("Sending file: " + toOpen)
                     statusMessage = MyWebServer.status[200]
                     conLen = "Content-Length: " + str(len(body)) + "\r\n"
                     if (".js" in statusCode):
@@ -81,6 +85,7 @@ class MyWebServer(socketserver.BaseRequestHandler):
                     else:
                         conType = "Content-Type: text/" + statusCode.split('.')[-1] + "\r\n"
                 except:
+                    print("Cannot send file: " + toOpen)
                     statusMessage = MyWebServer.status[404]
                     conType = "Content-Type: text/html\r\n"
                     body = open('HTTPresponse/404.html','rb').read()
@@ -90,7 +95,7 @@ class MyWebServer(socketserver.BaseRequestHandler):
 
             
         response_line = bytearray(response_line,'utf-8') + body
-        print(statusCode, statusMessage)  # what was requested
+        print("Returned:",statusMessage)  # what was requested
         print("-----------------")
         #print(response_line) # what we return
         
@@ -109,7 +114,7 @@ if __name__ == "__main__":
     
     HOST = "localhost"
     try:
-        PORT = sys.argv[2]
+        PORT = int(sys.argv[1])
     except:
         PORT = 8000
 
@@ -118,8 +123,12 @@ if __name__ == "__main__":
     socketserver.TCPServer.allow_reuse_address = True
     # Create the server, binding to localhost on PORT
     server = socketserver.TCPServer((HOST, PORT), MyWebServer)
+    print()
     print("Starting server...")
-    print("Press Ctrl-C to terminate program")
+    print("Listening on:", "localhost:"+str(PORT))
+    print("Navigate to", "localhost:"+str(PORT)+"/Skittles.html", "to play chess")
+    print("Press Ctrl-C to terminate the server")
+    print()
     print("-----------------")
 
     # Activate the server; this will keep running until you

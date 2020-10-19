@@ -12,6 +12,8 @@ SOURCES += \
     Board.cpp \
     ChessPiece.cpp \
     Engine.cpp \
+    Move.cpp \
+    MoveList.cpp \
     main.cpp \
     mainwindow.cpp
 
@@ -19,6 +21,8 @@ HEADERS += \
     Board.h \
     ChessPiece.h \
     Engine.h \
+    Move.h \
+    MoveList.h \
     mainwindow.h
 
 FORMS += \
@@ -28,3 +32,6 @@ FORMS += \
 qnx: target.path = /tmp/$${TARGET}/bin
 else: unix:!android: target.path = /opt/$${TARGET}/bin
 !isEmpty(target.path): INSTALLS += target
+
+RESOURCES += \
+    resources.qrc

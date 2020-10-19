@@ -1,6 +1,5 @@
 #include "Board.h"
-#include "ChessPiece.h"
-#include "QtMath"
+#include <QtMath>
 
 Board::Board(){}
 Board::~Board(){}
@@ -40,9 +39,11 @@ void Board::init()
     toPlay = WHITE;
     assignArray(bkPos, 0, 4);
     assignArray(wkPos, 7, 4);
+    moveList.clear();
+    captured = ChessPiece();
 }
 
-bool Board::validate(BSTR move)
+bool Board::validate(int start, int end)
 {
     // check whether a move is valid and move piece if it is
 
@@ -53,7 +54,7 @@ bool Board::validate(BSTR move)
     specialMove = NOSPECIAL;						// reset to no special, it should be checked by front end after every turn ...
 
     int startRow, endRow, startCol, endCol;
-    if (strToNum(move, startRow, endRow, startCol, endCol)) {
+    if (numToRowCol(start, end, startRow, endRow, startCol, endCol)) {
         return false;
     }
 
@@ -144,7 +145,6 @@ bool Board::validate(BSTR move)
         if (isChecked(othKing[0], othKing[1], board, oppColor, rowList, colList)) {
             if (isMate(othKing[0], othKing[1], board, rowList, colList)) {
                 MATE = true;
-                return true;
             }
         }
 
@@ -155,12 +155,15 @@ bool Board::validate(BSTR move)
         }
         switchToPlay();
         int temp[2] = { -2,-2 };
-        if (areEqual(enPassantPos,temp) && (enPassantColor != piece.getColor())) {
+        if (!areEqual(enPassantPos,temp) && (enPassantColor != piece.getColor())) {
             assignArray(enPassantPos,temp[0],temp[1]);
         }
         // store passant values
         assignArray(enPassantPosOld, enPassantPos[0], enPassantPos[1]);
         enPassantColorOld = enPassantColor;
+
+        // add move to movelist
+        addMove(start, end);
     }
 
     return valid;
@@ -420,11 +423,13 @@ void Board::movePiece(int startRow, int endRow, int startCol, int endCol)
 
     ChessPiece piece = board[startRow][startCol];
     piece.setMoved(true);
+    captured = board[endRow][endCol];
     board[endRow][endCol] = piece;
     board[startRow][startCol] = ChessPiece();
 
     // en passant, castling,
     if (specialMove == ENPASSANT) {
+        captured = board[startRow][endCol];
         board[startRow][endCol] = ChessPiece();
     }
     else if ((specialMove == BQCASTLE) || (specialMove == WQCASTLE)) {
@@ -449,7 +454,7 @@ bool Board::isChecked(int row, int col, ChessPiece cboard[8][8], int color, int 
     // that is color is color of the piece that is (or would be) occupying the square
 
 
-    if (inBounds(row, col) == false) return false;
+    if (!inBounds(row, col)) return false;
 
     ChessPiece piece;
     int index = 0;
@@ -629,7 +634,7 @@ bool Board::isChecked(int row, int col, ChessPiece cboard[8][8], int color, int 
 }
 
 bool Board::isMate(int row, int col, ChessPiece cboard[8][8], int rowList[], int colList[]) {
-    // check if the king at row/col is in check mate, assumes the king being in check has be checked
+    // check if the king at row/col is in check mate, assumes the king being in check has been checked
 
     if (cboard[row][col].getNameValue() != KING) return false;
     int rowInfo[16], colInfo[16];
@@ -651,7 +656,7 @@ bool Board::isMate(int row, int col, ChessPiece cboard[8][8], int rowList[], int
             cboard[rowList[0]][colList[0]] = king;
             cboard[row][col] = blankPiece;
             if (!isChecked(rowList[0], colList[0], cboard, color, rowInfo, colInfo)) {
-                // king isn't moving into check, // undo modify board
+                // king isn't moving into check, undo modify board
                 cboard[rowList[0]][colList[0]] = piece;
                 cboard[row][col] = king;
                 return false;
@@ -760,6 +765,148 @@ bool Board::isPawnLos(int row, int col, ChessPiece cboard[8][8], int color){
     }
 }
 
+void Board::goBack(int &start, int &end, int &special, int &promoPiece, int &capturedPiece)
+{
+    // go forward a move
+    // TODO: finish changing board, how to undo a piece bing moved beofre
+
+    Move *move = moveList.getPrevious();
+    if (move == nullptr){
+        start = -1;
+        end = -1;
+        special = -1;
+        promoPiece = -1;
+        capturedPiece = -1;
+        return;
+    }
+
+    // set variables to send back
+    start = move->start;
+    end = move->end;
+    special = move->specialMove;
+    promoPiece = move->promoTo;
+    ChessPiece captPiece = ChessPiece(move->piece);
+    capturedPiece = captPiece.getNameValue();
+
+    // set board variables back
+    assignArray(enPassantPos, move->enPassant[0], move->enPassant[1]);
+    enPassantColor = move->enPassantColor;
+    specialMove = NOSPECIAL;
+    MATE = move->mate;
+
+    // set pieces including captured back
+    int startRow, endRow, startCol, endCol, specialmv;
+    specialmv = move->specialMove;
+    numToRowCol(start, end, startRow, endRow, startCol, endCol);
+    board[startRow][startCol] = board[endRow][endCol];
+    if (specialmv == ENPASSANT){
+        if (board[startRow][startCol].getColor() == BLACK){
+            board[endRow-1][endCol] = captPiece;
+        }
+        else{
+            board[endRow+1][endCol] = captPiece;
+        }
+    }
+    else{
+        board[endRow][endCol] = captPiece;
+    }
+
+    // handle special cases
+    if (specialmv == PROMOTION){
+        board[startRow][startCol] = ChessPiece(0, PAWN, board[startRow][startCol].getColor());
+        board[startRow][startCol].setMoved(true);
+    }
+    else if (specialmv == BQCASTLE){
+        board[0][0] = board[0][3];
+        board[0][3] = ChessPiece();
+    }
+    else if (specialmv == BKCASTLE){
+        board[0][7] = board[0][5];
+        board[0][5] = ChessPiece();
+    }
+    else if (specialmv == WQCASTLE){
+        board[7][0] = board[7][3];
+        board[7][3] = ChessPiece();
+    }
+    else if (specialmv == WKCASTLE){
+        board[7][7] = board[7][5];
+        board[7][5] = ChessPiece();
+    }
+
+
+    toPlay = board[startRow][startCol].getColor();
+}
+
+void Board::goForward(int &start, int &end, int &special, int &promoPiece, int &capturedPiece){
+    // go foraward a move
+
+    // TODO: finish changing board
+
+    Move *move = moveList.getNext();
+    if (move == nullptr){
+        start = -1;
+        end = -1;
+        special = -1;
+        promoPiece = -1;
+        capturedPiece = -1;
+        return;
+    }
+
+    // set variables to send back
+    start = move->start;
+    end = move->end;
+    special = move->specialMove;
+    promoPiece = move->promoTo;
+    capturedPiece = -1;
+
+    // set variables for board
+    //assignArray(enPassantPos, move->enPassant[0], move->enPassant[1]);
+    //enPassantColor = move->enPassantColor;
+    MATE = move->mate;
+    int startRow, endRow, startCol, endCol;
+    specialMove = move->specialMove;
+    numToRowCol(start, end, startRow, endRow, startCol, endCol);
+    toPlay = BLACK + WHITE - board[startRow][startCol].getColor();
+    board[endRow][endCol] = board[startRow][startCol];
+    board[endRow][endCol].setMoved(true);
+
+    if ((board[endRow][endCol].getNameValue() == PAWN) && (qFabs(endRow-startRow) == 2)){
+        // update enPassant information
+        assignArray(enPassantPos,endRow,endCol);
+    }
+
+    // handle special moves
+    if (specialMove == PROMOTION){
+        assignArray(promotionPos, endRow, endCol);
+        promote(promoPiece);
+    }
+    else if (specialMove == ENPASSANT){
+        if (board[endRow][endCol].getColor() == BLACK){
+            board[endRow-1][endCol] = ChessPiece();
+        }
+        else{
+            board[endRow+1][endCol] = ChessPiece();
+        }
+    }
+    else if (specialMove == BQCASTLE){
+        board[0][3] = board[0][0];
+        board[0][0] = ChessPiece();
+    }
+    else if (specialMove == BKCASTLE){
+        board[0][5] = board[0][7];
+        board[0][7] = ChessPiece();
+    }
+    else if (specialMove == WQCASTLE){
+        board[7][3] = board[7][0];
+        board[7][0] = ChessPiece();
+    }
+    else if (specialMove == WKCASTLE){
+        board[7][5] = board[7][7];
+        board[7][7] = ChessPiece();
+    }
+
+}
+
 bool Board::promote(int pieceNameVal)
 {
     // promote a pawn to the given piece type
@@ -800,12 +947,20 @@ bool Board::promote(int pieceNameVal)
         if (valid) {
             board[promotionPos[0]][promotionPos[1]] = piece;
             specialMove = NOSPECIAL;
+            promoTo = pieceNameVal;
         }
 
         return valid;
     }
 
     return false;
+}
+
+void Board::addMove(int start, int end){
+    // add a move to the movelist
+
+    bool capture = captured.getNameValue() != EMPTY;
+    moveList.createMove(start, end, enPassantPosOld, enPassantColorOld, specialMove, capture, promoTo, captured, MATE);
 }
 
 bool Board::inBounds(int row, int col) {
@@ -830,147 +985,24 @@ void Board::switchToPlay()
     toPlay = WHITE + BLACK - toPlay;
 }
 
-bool Board::strToNum(BSTR move, int &startRow, int &endRow, int &startCol, int &endCol)
+bool Board::numToRowCol(int start, int end, int &startRow, int &endRow, int &startCol, int &endCol)
 {
-    // move : a1->a2
+    // start/end goes from 0-63
     // a1 is bottom left, h8 is the top right
 
-    int badPos = false;
-    /*
-    if (strlen(move) != 5) {
-        return false;
-    }
-    */
+    startRow = start/BOARDSIZE;
+    endRow = end/BOARDSIZE;
+    startCol = start%BOARDSIZE;
+    endCol = end%BOARDSIZE;
+ 
+    return ((startRow >= 0) && (startRow<BOARDSIZE) && (endRow >= 0) && (endRow<BOARDSIZE) && (startCol >= 0) && (startCol<BOARDSIZE) && (endCol >= 0) && (endCol<BOARDSIZE));
+}
 
-    // startRow
-    switch (move[1])
-    {
-    case '1':
-        startRow = 7;
-        break;
-    case '2':
-        startRow = 6;
-        break;
-    case '3':
-        startRow = 5;
-        break;
-    case '4':
-        startRow = 4;
-        break;
-    case '5':
-        startRow = 3;
-        break;
-    case '6':
-        startRow = 2;
-        break;
-    case '7':
-        startRow = 1;
-        break;
-    case '8':
-        startRow = 0;
-        break;
-    default:
-        startRow = -1;
-        badPos = true;
-    }
+int Board::rowColToNum(int row, int col)
+{
+    // return a number 0-63 for row/start
 
-    // endRow
-    switch (move[5])
-    {
-    case '1':
-        endRow = 7;
-        break;
-    case '2':
-        endRow = 6;
-        break;
-    case '3':
-        endRow = 5;
-        break;
-    case '4':
-        endRow = 4;
-        break;
-    case '5':
-        endRow = 3;
-        break;
-    case '6':
-        endRow = 2;
-        break;
-    case '7':
-        endRow = 1;
-        break;
-    case '8':
-        endRow = 0;
-        break;
-    default:
-        endRow = -1;
-        badPos = true;
-    }
-
-    // startCol
-    switch (move[0])
-    {
-    case 'a':
-        startCol = 0;
-        break;
-    case 'b':
-        startCol = 1;
-        break;
-    case 'c':
-        startCol = 2;
-        break;
-    case 'd':
-        startCol = 3;
-        break;
-    case 'e':
-        startCol = 4;
-        break;
-    case 'f':
-        startCol = 5;
-        break;
-    case 'g':
-        startCol = 6;
-        break;
-    case 'h':
-        startCol = 7;
-        break;
-    default:
-        startCol = -1;
-        badPos = true;
-    }
-
-    // endCol
-    switch (move[4])
-    {
-    case 'a':
-        endCol = 0;
-        break;
-    case 'b':
-        endCol = 1;
-        break;
-    case 'c':
-        endCol = 2;
-        break;
-    case 'd':
-        endCol = 3;
-        break;
-    case 'e':
-        endCol = 4;
-        break;
-    case 'f':
-        endCol = 5;
-        break;
-    case 'g':
-        endCol = 6;
-        break;
-    case 'h':
-        endCol = 7;
-        break;
-    default:
-        endCol = -1;
-        badPos = true;
-    }
-
-    return badPos;
+    return (row*BOARDSIZE + col);
 }
 
 int Board::getSpecial()
