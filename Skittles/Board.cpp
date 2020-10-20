@@ -175,7 +175,6 @@ bool Board::pawnMoveValid(ChessPiece pawn, int startRow, int endRow, int startCo
 
     bool valid = false;
 
-    int start[2] = {startRow, startCol};
     int end[2] = { endRow, endCol };
     int color = pawn.getColor();
     int row;
@@ -318,7 +317,7 @@ bool Board::bishopMoveValid(ChessPiece bishop, int startRow, int endRow, int sta
     int rowShift = 1;
     int colShift = 1;
 
-    if (qFabs(endRow - startRow) != qFabs(endCol - startCol)) { // TODO: make sure qFabs working as intended
+    if (qFabs(endRow - startRow) != qFabs(endCol - startCol)) {
         // didn't move diagonally
         return valid;
     }

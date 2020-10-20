@@ -46,14 +46,110 @@ void MainWindow::buttonPressed(int id){
 
     if (valid){
         // move was valid in chess engine, so move pieces
-        btn2->setIcon(btn1->icon());
-        btn1->setIcon(QIcon());
+        handleMove(btn1, btn2);
     }
-
-
 
     firstClick = -1;
     secondClick = -1;
+
+}
+
+void MainWindow::handleMove(QPushButton *btn1, QPushButton *btn2){
+    // move pieces
+
+    btn2->setIcon(btn1->icon());
+    btn1->setIcon(QIcon());
+
+    switch (engine.getSpecialMove()) {
+        case 0:
+            // no special
+            break;
+        case 1:
+            // promotion
+            // TODO: ask for promotion Promotion();
+            break;
+        case 2:
+            // enpassant
+            enPassant();
+            break;
+        case 3:
+            // bqcastle
+            castle(3);
+            break;
+        case 4:
+            // wqcastle
+            castle(4);
+            break;
+        case 5:
+            // bkcastle
+            castle(5);
+            break;
+        case 6:
+            // wkcastle
+            castle(6);
+            break;
+        default:
+
+            break;
+    }
+
+}
+
+void MainWindow::enPassant(){
+    // remove piece captured by enpassant
+
+    int id;
+
+    if (firstClick < secondClick){
+        // black performing en passant
+        id = secondClick - BOARDSIZE;
+    }
+    else{
+        // white
+        id = secondClick + BOARDSIZE;
+    }
+
+    QPushButton *btn = (QPushButton *) btnGroup.button(id);
+    btn->setIcon(QIcon());
+
+}
+
+void MainWindow::castle(int castleType){
+    // move knight from castling
+
+    short int from, to;
+
+    switch (castleType)
+    {
+        case 3:
+            // bqcastle
+            from = 0;
+            to = 3;
+            break;
+        case 4:
+            // wqcastle
+            from = 56;
+            to = 59;
+            break;
+        case 5:
+            // bkcastle
+            from = 7;
+            to = 5;
+            break;
+        case 6:
+            // wkcastle
+            from = 63;
+            to = 61;
+            break;
+        default:
+            return;
+    }
+
+    QPushButton *btnFrom = (QPushButton *) btnGroup.button(from);
+    QPushButton *btnTo = (QPushButton *) btnGroup.button(to);
+
+    btnTo->setIcon(btnFrom->icon());
+    btnFrom->setIcon(QIcon());
 
 }
 
@@ -108,19 +204,19 @@ void MainWindow::buttonStartup(){
 
 
     // second row
-    for (int i=0; i<8; i++){
+    for (int i=0; i<BOARDSIZE; i++){
         createButton(sizePolicy, id++, 1, i, blackPawnIcon);
     }
 
     // row 3-6 these are blank
     for (int i=2; i<6; i++){
-        for (int j=0; j<8; j++){
+        for (int j=0; j<BOARDSIZE; j++){
             createButton(sizePolicy, id++, i, j);
         }
     }
 
     // second last line
-    for (int i=0; i<8; i++){
+    for (int i=0; i<BOARDSIZE; i++){
         createButton(sizePolicy, id++, 6, i, whitePawnIcon);
     }
 
@@ -164,8 +260,8 @@ void MainWindow::createButton(QSizePolicy sizePolicy, short int id, int row, int
 void MainWindow::restoreButtonColor(QPushButton *btn, int id){
     // change button background color to original color
 
-    int row = id/8;
-    int col = id%8;
+    int row = id/BOARDSIZE;
+    int col = id%BOARDSIZE;
     QPalette pal = btn->palette();
 
     if (((col+row) % 2) == 0){

@@ -20,9 +20,13 @@ class MainWindow : public QMainWindow
     Q_OBJECT
 
 private:
+
+    // layout/organization
     QWidget *window;
     QButtonGroup btnGroup;
     QGridLayout *layout;
+
+    // colors for board
     QColor defaultDarkerColor = QColor(46, 46, 46);
     QColor defaultLighterColor = QColor(237, 237, 237);
     QColor darkerColor = QColor(46, 46, 46);
@@ -51,10 +55,16 @@ private:
     // chess engine
     Engine engine;
 
+    // board size
+    const int BOARDSIZE = 8;
+
     // private functions
     void buttonStartup();
     void createButton( QSizePolicy sizePolicy, short int id, int row, int col, QIcon icon=QIcon());
     void restoreButtonColor(QPushButton *btn, int id);
+    void handleMove(QPushButton *btn1, QPushButton *btn2);
+    void enPassant();
+    void castle(int castleType);
 
 
 public:
