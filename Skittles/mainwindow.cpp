@@ -1,17 +1,62 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
 #include <QLayout>
-#include <QPushButton>
 #include <Qt>
 #include <QSizePolicy>
+
+#include <QDebug>
 
 MainWindow::MainWindow(QWidget *parent): QMainWindow(parent)
 {
     //ui->setupUi(this);ui(new Ui::MainWindow)
     window = new QWidget;
-    setImages();
+    buttonStartup();
+    connect(&btnGroup, SIGNAL(idClicked(int)), this, SLOT(buttonPressed(int)));
+    engine.init();
+}
+
+void MainWindow::buttonPressed(int id){
+    // handle a button being clicked
+
+    QPushButton *btn2 = (QPushButton *) btnGroup.button(id);
+
+
+    if (firstClick == -1){
+        // set first click and change button to select color
+        firstClick = id;
+        QPalette pal = btn2->palette();
+        pal.setColor(QPalette::Button, selectColor);
+        btn2->setPalette(pal);
+        return;
+    }
+
+    if (id == firstClick){
+        // unselect button, clicked twice
+        firstClick = -1;
+        secondClick = -1;
+        restoreButtonColor(btn2, id);
+        return;
+    }
+
+    // validate move with engine
+    secondClick = id;
+    QPushButton *btn1 = (QPushButton *) btnGroup.button(firstClick);
+    bool valid = engine.validate(firstClick, secondClick);
+    restoreButtonColor(btn1, firstClick);
+
+    if (valid){
+        // move was valid in chess engine, so move pieces
+        btn2->setIcon(btn1->icon());
+        btn1->setIcon(QIcon());
+    }
+
+
+
+    firstClick = -1;
+    secondClick = -1;
 
 }
+
 bool MainWindow::eventFilter(QObject *object, QEvent *event){
     // allow icons to be resized
 
@@ -26,7 +71,7 @@ bool MainWindow::eventFilter(QObject *object, QEvent *event){
 
 }
 
-void MainWindow::setImages(){
+void MainWindow::buttonStartup(){
     // set images
 
 
@@ -35,7 +80,7 @@ void MainWindow::setImages(){
     QLayout *layout2 = (QLayout*) layout;
     btnGroup.setExclusive(false);
     layout->setSpacing(0);
-    layout2->setContentsMargins(0,0,500,0);
+    layout2->setContentsMargins(0,0,300,0);
 
     // size policy for buttons
     QSizePolicy sizePolicy = QSizePolicy();
@@ -107,17 +152,8 @@ void MainWindow::createButton(QSizePolicy sizePolicy, short int id, int row, int
     button->setSizePolicy(sizePolicy);
 
     // add color
-    QPalette pal = button->palette();
-    if (((col+row) % 2) == 0){
-        // lighter color
-        pal.setColor(QPalette::Button, QColor(237, 237, 237));
-    }
-    else{
-        // darker color
-        pal.setColor(QPalette::Button, QColor(46, 46, 46));
-    }
+    restoreButtonColor(button, id);
     button->setAutoFillBackground(true);
-    button->setPalette(pal);
     button->update();
 
     // add to layout and button group
@@ -125,9 +161,28 @@ void MainWindow::createButton(QSizePolicy sizePolicy, short int id, int row, int
     layout->addWidget(button,row,col);
 }
 
+void MainWindow::restoreButtonColor(QPushButton *btn, int id){
+    // change button background color to original color
+
+    int row = id/8;
+    int col = id%8;
+    QPalette pal = btn->palette();
+
+    if (((col+row) % 2) == 0){
+        // lighter color
+        pal.setColor(QPalette::Button, lighterColor);
+    }
+    else{
+        // darker color
+        pal.setColor(QPalette::Button, darkerColor);
+    }
+    btn->setPalette(pal);
+}
+
 MainWindow::~MainWindow()
 {
     //delete ui;
+    delete layout;
     delete window;
 }
 

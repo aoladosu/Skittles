@@ -76,6 +76,6 @@ private:
     int rowColToNum(int row, int col);
     bool inBounds(int row, int col);
     bool areEqual(int arr1[2], int arr2[2]);
-    bool assignArray(int arr[2], int val1, int val2);
+    void assignArray(int arr[2], int val1, int val2);
     void addMove(int start, int end);
 };

@@ -5,6 +5,11 @@
 #include <QButtonGroup>
 #include <QGridLayout>
 #include <QIcon>
+#include <QColor>
+#include <QMouseEvent>
+#include <QPushButton>
+#include "Engine.h"
+
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
@@ -18,6 +23,12 @@ private:
     QWidget *window;
     QButtonGroup btnGroup;
     QGridLayout *layout;
+    QColor defaultDarkerColor = QColor(46, 46, 46);
+    QColor defaultLighterColor = QColor(237, 237, 237);
+    QColor darkerColor = QColor(46, 46, 46);
+    QColor lighterColor = QColor(237, 237, 237);
+    QColor selectColor = QColor(0, 255, 0);
+    QColor altSelectColor = QColor(255, 0, 0);
 
     // images
     QIcon blackPawnIcon = QIcon(":/imagesPieces/black_pawn");
@@ -33,13 +44,26 @@ private:
     QIcon whiteQueenIcon = QIcon(":/imagesPieces/white_queen");
     QIcon whiteKingIcon = QIcon(":/imagesPieces/white_king");
 
+    // what pieces to move
+    int firstClick = -1;
+    int secondClick = -1;
+
+    // chess engine
+    Engine engine;
+
+    // private functions
+    void buttonStartup();
+    void createButton( QSizePolicy sizePolicy, short int id, int row, int col, QIcon icon=QIcon());
+    void restoreButtonColor(QPushButton *btn, int id);
+
 
 public:
     MainWindow(QWidget *parent = nullptr);
     ~MainWindow();
-    void setImages();
-    bool eventFilter(QObject *object, QEvent *event);
-    void createButton( QSizePolicy sizePolicy, short int id, int row, int col, QIcon icon=QIcon());
+    bool eventFilter(QObject *object, QEvent *event) override;
+
+public slots:
+    void buttonPressed(int id);
 
 
 };

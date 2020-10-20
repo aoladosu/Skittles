@@ -10,7 +10,7 @@ private:
 public:
 
     Engine();
-    void engineInit();                                                  // initialize a new game
+    void init();                                                        // initialize a new game
     bool validate(int start, int end);                                  // validate a move
     int getSpecialMove();                                               // check if a special move happened
     bool promote(int pieceNameVal);                                     // promote a piece

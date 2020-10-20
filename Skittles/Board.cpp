@@ -54,7 +54,7 @@ bool Board::validate(int start, int end)
     specialMove = NOSPECIAL;						// reset to no special, it should be checked by front end after every turn ...
 
     int startRow, endRow, startCol, endCol;
-    if (numToRowCol(start, end, startRow, endRow, startCol, endCol)) {
+    if (!numToRowCol(start, end, startRow, endRow, startCol, endCol)) {
         return false;
     }
 
@@ -163,7 +163,7 @@ bool Board::validate(int start, int end)
         enPassantColorOld = enPassantColor;
 
         // add move to movelist
-        addMove(start, end);
+        //addMove(start, end);
     }
 
     return valid;
@@ -994,8 +994,8 @@ bool Board::numToRowCol(int start, int end, int &startRow, int &endRow, int &sta
     endRow = end/BOARDSIZE;
     startCol = start%BOARDSIZE;
     endCol = end%BOARDSIZE;
- 
-    return ((startRow >= 0) && (startRow<BOARDSIZE) && (endRow >= 0) && (endRow<BOARDSIZE) && (startCol >= 0) && (startCol<BOARDSIZE) && (endCol >= 0) && (endCol<BOARDSIZE));
+
+    return (inBounds(startRow, startCol) && inBounds(endRow, endCol));
 }
 
 int Board::rowColToNum(int row, int col)
@@ -1030,7 +1030,7 @@ bool Board::areEqual(int arr1[2], int arr2[2]){
     return ((arr1[0] == arr2[0]) && (arr1[1] == arr2[1]));
 }
 
-bool Board::assignArray(int arr[2], int val1, int val2){
+void Board::assignArray(int arr[2], int val1, int val2){
     // put val1/2 in array
     arr[0] = val1;
     arr[1] = val2;

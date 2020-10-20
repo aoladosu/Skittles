@@ -3,7 +3,7 @@
 Engine::Engine(){}
 
 
-void Engine::engineInit()
+void Engine::init()
 {
     board.init();
     return;
