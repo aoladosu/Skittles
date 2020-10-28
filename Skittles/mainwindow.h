@@ -55,15 +55,19 @@ private:
     // chess engine
     Engine engine;
 
-    // board size
+    // board variables
     const int BOARDSIZE = 8;
+    const int WHITE = 0;
+    const int BLACK = 1;
 
     // private functions
     void buttonStartup();
-    void createButton( QSizePolicy sizePolicy, short int id, int row, int col, QIcon icon=QIcon());
+    void setImages();
+    void createButton( QSizePolicy sizePolicy, short int id, int row, int col);
     void restoreButtonColor(QPushButton *btn, int id);
-    void handleMove(QPushButton *btn1, QPushButton *btn2);
-    void enPassant();
+    void handleMove(QPushButton *btn1, QPushButton *btn2, int special, int start, int end);
+    void handleUndoMove(int start, int end, int special, int capturedPiece, int color);
+    void enPassant(int clickOne, int clickTwo);
     void castle(int castleType);
 
 
@@ -72,8 +76,10 @@ public:
     ~MainWindow();
     bool eventFilter(QObject *object, QEvent *event) override;
 
-public slots:
+private slots:
     void buttonPressed(int id);
+    void undoMove();
+    void redoMove();
 
 
 };

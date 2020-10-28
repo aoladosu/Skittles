@@ -33,10 +33,10 @@ int Engine::getWinner()
     return board.getWinner();
 }
 
-void Engine::goBack(int &start, int &end, int &special, int &promoPiece, int &capturedPiece){
-    board.goBack(start, end, special, promoPiece, capturedPiece);
+void Engine::goBack(int &start, int &end, int &special, int &promoPiece, int &capturedPiece, int &color){
+    board.goBack(start, end, special, promoPiece, capturedPiece, color);
 }
 
-void Engine::goForward(int &start, int &end, int &special, int &promoPiece, int &capturedPiece){
-    board.goForward(start, end, special, promoPiece, capturedPiece);
+void Engine::goForward(int &start, int &end, int &special, int &promoPiece, int &capturedPiece, int &color){
+    board.goForward(start, end, special, promoPiece, capturedPiece, color);
 }

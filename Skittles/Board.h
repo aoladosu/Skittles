@@ -26,6 +26,13 @@ private:
     int enPassantPosOld[2] = { -2,-2 };	// stores the old cycle of enpassant
     int enPassantColorOld = -1;
 
+    // board state
+    bool MATE = false;									// endgame conditions
+    int toPlay = WHITE;									// what side is playing
+    int bkPos[2] = {0, 4}, wkPos[2] = {7, 4};			// king positions
+    int numPieces = 32;
+    int numPiecesOld = 32;
+
     // special moves
     const int NOSPECIAL = 0;
     const int PROMOTION = 1;
@@ -36,13 +43,12 @@ private:
     const int WKCASTLE = 6;
     int specialMove = NOSPECIAL;
     int promotionPos[2] = { -2, -2 };
-    int promoTo;                                          // piece promoted to
 
-    bool MATE = false;									// endgame conditions
-    int toPlay = WHITE;									// what side is playing
-    int bkPos[2] = {0, 4}, wkPos[2] = {7, 4};			// king positions
-    ChessPiece captured;                                // piece that is captured by move
+    // variables for movelist
     MoveList moveList;                                  // store moves played
+    bool movedStore;                                    // whether piece moved before
+    int promoTo;                                        // piece promoted to
+    ChessPiece captured;                                // piece that is captured by move
 
     // the board
     ChessPiece board[8][8];
@@ -58,8 +64,8 @@ public:
     bool gameOver();
     int getWinner();
     bool promote(int pieceNameVal);
-    void goBack(int &start, int &end, int &special, int &promoPiece, int &capturedPiece);
-    void goForward(int &start, int &end, int &special, int &promoPiece, int &capturedPiece);
+    void goBack(int &start, int &end, int &special, int &promoPiece, int &capturedPiece, int &color);
+    void goForward(int &start, int &end, int &special, int &promoPiece, int &capturedPiece, int &color);
 
 private:
     bool pawnMoveValid(ChessPiece pawn, int startRow, int endRow, int startCol, int endCol);

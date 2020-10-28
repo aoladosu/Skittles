@@ -9,10 +9,19 @@
 MainWindow::MainWindow(QWidget *parent): QMainWindow(parent)
 {
     //ui->setupUi(this);ui(new Ui::MainWindow)
+
     window = new QWidget;
     buttonStartup();
+    setImages();
+    QPushButton *back = new QPushButton(blackBishopIcon, "");
+    QPushButton *forward = new QPushButton(blackKnightIcon, "");
+    layout->addWidget(back, 0, 8);
+    layout->addWidget(forward, 1, 8);
     connect(&btnGroup, SIGNAL(idClicked(int)), this, SLOT(buttonPressed(int)));
+    connect(back, SIGNAL(clicked()), this, SLOT(undoMove()));
+    connect(forward, SIGNAL(clicked()), this, SLOT(redoMove()));
     engine.init();
+
 }
 
 void MainWindow::buttonPressed(int id){
@@ -46,7 +55,7 @@ void MainWindow::buttonPressed(int id){
 
     if (valid){
         // move was valid in chess engine, so move pieces
-        handleMove(btn1, btn2);
+        handleMove(btn1, btn2, engine.getSpecialMove(), firstClick, secondClick);
     }
 
     firstClick = -1;
@@ -54,13 +63,63 @@ void MainWindow::buttonPressed(int id){
 
 }
 
-void MainWindow::handleMove(QPushButton *btn1, QPushButton *btn2){
-    // move pieces
+void MainWindow::undoMove(){
+    // process undoing a move
+
+    // variables to get info back
+    int start, end, special, promoPiece, capturedPiece, color;
+    engine.goBack(start, end, special, promoPiece, capturedPiece, color);
+
+    qDebug() << "undo stats...";
+    qDebug() << "start: " << start;
+    qDebug() << "end: " << end;
+    qDebug() << "special: " << special;
+    qDebug() << "promo: " << promoPiece;
+    qDebug() << "captured: " << capturedPiece;
+    qDebug() << "color: " << color;
+
+    if (start == -1){
+        // TODO: have a message that you can't go back, or grey out button, so need a new func
+        return;
+    }
+
+    handleUndoMove(start, end, special, capturedPiece, color);
+
+}
+
+void MainWindow::redoMove(){
+    // process redoing a move
+
+    // variables to get info back
+    int start, end, special, promoPiece, capturedPiece, color;
+    engine.goForward(start, end, special, promoPiece, capturedPiece, color);
+
+    qDebug() << "redo stats...";
+    qDebug() << "start: " << start;
+    qDebug() << "end: " << end;
+    qDebug() << "special: " << special;
+    qDebug() << "promo: " << promoPiece;
+    qDebug() << "captured: " << capturedPiece;
+    qDebug() << "color: " << color;
+
+    if (start == -1){
+        // TODO: have a message that you can't go forward, or grey out button, so need a new func
+        return;
+    }
+
+    QPushButton *btnStart = (QPushButton *) btnGroup.button(start);
+    QPushButton *btnEnd = (QPushButton *) btnGroup.button(end);
+    handleMove(btnStart, btnEnd, special, start, end);
+
+}
+
+void MainWindow::handleMove(QPushButton *btn1, QPushButton *btn2, int special, int start, int end){
+    // move pieces and handle special cases
 
     btn2->setIcon(btn1->icon());
     btn1->setIcon(QIcon());
 
-    switch (engine.getSpecialMove()) {
+    switch (special) {
         case 0:
             // no special
             break;
@@ -70,7 +129,7 @@ void MainWindow::handleMove(QPushButton *btn1, QPushButton *btn2){
             break;
         case 2:
             // enpassant
-            enPassant();
+            enPassant(start, end);
             break;
         case 3:
             // bqcastle
@@ -89,24 +148,126 @@ void MainWindow::handleMove(QPushButton *btn1, QPushButton *btn2){
             castle(6);
             break;
         default:
-
             break;
     }
 
 }
 
-void MainWindow::enPassant(){
+void MainWindow::handleUndoMove(int start, int end, int special, int capturedPiece, int color){
+    // handle moving pieces back one move
+    // color is the piece that moved on this turn
+
+    // get buttons
+    QPushButton *btnStart = (QPushButton *) btnGroup.button(start);
+    QPushButton *btnEnd = (QPushButton *) btnGroup.button(end);
+    QPushButton *btn1, *btn2;
+
+    btnStart->setIcon(btnEnd->icon());
+    // put captured piece back
+    switch(capturedPiece){
+        case 0:
+            // empty piece
+            btnEnd->setIcon(QIcon());
+            break;
+        case 1:
+            // pawn
+            if ((color == BLACK) && special!=2) btnEnd->setIcon(whitePawnIcon);
+            else if (special!=2) btnEnd->setIcon(blackPawnIcon);
+            break;
+        case 2:
+            // rook
+            if (color == BLACK) btnEnd->setIcon(whiteRookIcon);
+            else btnEnd->setIcon(blackRookIcon);
+            break;
+        case 3:
+            // knight
+            if (color == BLACK) btnEnd->setIcon(whiteKnightIcon);
+            else btnEnd->setIcon(blackKnightIcon);
+            break;
+        case 4:
+            // bishop
+            if (color == BLACK) btnEnd->setIcon(whiteBishopIcon);
+            else btnEnd->setIcon(blackBishopIcon);
+            break;
+        case 5:
+            // queen
+            if (color == BLACK) btnEnd->setIcon(whiteQueenIcon);
+            else btnEnd->setIcon(blackQueenIcon);
+            break;
+        case 6:
+            // king
+            if (color == BLACK) btnEnd->setIcon(whiteKingIcon);
+            else btnEnd->setIcon(blackKingIcon);
+            break;
+    }
+
+    // process special moves
+    switch(special){
+        case 1:
+            // promotion
+            if (color == BLACK) btnStart->setIcon(blackPawnIcon);
+            else btnStart->setIcon(whitePawnIcon);
+            break;
+        case 2:
+            // enpassant
+            if (color == BLACK){
+                btn1 = (QPushButton *) btnGroup.button(end-BOARDSIZE);
+                btn1->setIcon(whitePawnIcon);
+                btnEnd->setIcon(QIcon());
+            }
+            else {
+                btn1 = (QPushButton *) btnGroup.button(end+BOARDSIZE);
+                btn1->setIcon(blackPawnIcon);
+                btnEnd->setIcon(QIcon());
+            }
+            break;
+        case 3:
+            // bqcastle
+            btn1 = (QPushButton *) btnGroup.button(0);
+            btn2 = (QPushButton *) btnGroup.button(3);
+            btn1->setIcon(btn2->icon());
+            btn2->setIcon(QIcon());
+            break;
+        case 4:
+            // wqcastle
+            btn1 = (QPushButton *) btnGroup.button(56);
+            btn2 = (QPushButton *) btnGroup.button(59);
+            btn1->setIcon(btn2->icon());
+            btn2->setIcon(QIcon());
+            break;
+        case 5:
+            // bkcastle
+            btn1 = (QPushButton *) btnGroup.button(7);
+            btn2 = (QPushButton *) btnGroup.button(5);
+            btn1->setIcon(btn2->icon());
+            btn2->setIcon(QIcon());
+            break;
+        case 6:
+            // wkcastle
+            btn1 = (QPushButton *) btnGroup.button(63);
+            btn2 = (QPushButton *) btnGroup.button(61);
+            btn1->setIcon(btn2->icon());
+            btn2->setIcon(QIcon());
+            break;
+        default:
+            // no special
+            break;
+    }
+
+}
+
+void MainWindow::enPassant(int clickOne, int clickTwo){
     // remove piece captured by enpassant
 
     int id;
 
-    if (firstClick < secondClick){
+    if (clickOne < clickTwo){
         // black performing en passant
-        id = secondClick - BOARDSIZE;
+        id = clickTwo - BOARDSIZE;
     }
     else{
         // white
-        id = secondClick + BOARDSIZE;
+        id = clickTwo + BOARDSIZE;
     }
 
     QPushButton *btn = (QPushButton *) btnGroup.button(id);
@@ -193,19 +354,19 @@ void MainWindow::buttonStartup(){
     short int row = 0;
 
     // top row
-    createButton(sizePolicy, id++, row, col++, blackRookIcon);
-    createButton(sizePolicy, id++, row, col++, blackKnightIcon);
-    createButton(sizePolicy, id++, row, col++, blackBishopIcon);
-    createButton(sizePolicy, id++, row, col++, blackQueenIcon);
-    createButton(sizePolicy, id++, row, col++, blackKingIcon);
-    createButton(sizePolicy, id++, row, col++, blackBishopIcon);
-    createButton(sizePolicy, id++, row, col++, blackKnightIcon);
-    createButton(sizePolicy, id++, row, col++, blackRookIcon);
+    createButton(sizePolicy, id++, row, col++);
+    createButton(sizePolicy, id++, row, col++);
+    createButton(sizePolicy, id++, row, col++);
+    createButton(sizePolicy, id++, row, col++);
+    createButton(sizePolicy, id++, row, col++);
+    createButton(sizePolicy, id++, row, col++);
+    createButton(sizePolicy, id++, row, col++);
+    createButton(sizePolicy, id++, row, col++);
 
 
     // second row
     for (int i=0; i<BOARDSIZE; i++){
-        createButton(sizePolicy, id++, 1, i, blackPawnIcon);
+        createButton(sizePolicy, id++, 1, i);
     }
 
     // row 3-6 these are blank
@@ -217,20 +378,20 @@ void MainWindow::buttonStartup(){
 
     // second last line
     for (int i=0; i<BOARDSIZE; i++){
-        createButton(sizePolicy, id++, 6, i, whitePawnIcon);
+        createButton(sizePolicy, id++, 6, i);
     }
 
-    // lastline
+    // last row
     col = 0;
     row = 7;
-    createButton(sizePolicy, id++, row, col++, whiteRookIcon);
-    createButton(sizePolicy, id++, row, col++, whiteKnightIcon);
-    createButton(sizePolicy, id++, row, col++, whiteBishopIcon);
-    createButton(sizePolicy, id++, row, col++, whiteQueenIcon);
-    createButton(sizePolicy, id++, row, col++, whiteKingIcon);
-    createButton(sizePolicy, id++, row, col++, whiteBishopIcon);
-    createButton(sizePolicy, id++, row, col++, whiteKnightIcon);
-    createButton(sizePolicy, id++, row, col++, whiteRookIcon);
+    createButton(sizePolicy, id++, row, col++);
+    createButton(sizePolicy, id++, row, col++);
+    createButton(sizePolicy, id++, row, col++);
+    createButton(sizePolicy, id++, row, col++);
+    createButton(sizePolicy, id++, row, col++);
+    createButton(sizePolicy, id++, row, col++);
+    createButton(sizePolicy, id++, row, col++);
+    createButton(sizePolicy, id++, row, col++);
 
 
     //show layout
@@ -239,11 +400,76 @@ void MainWindow::buttonStartup(){
 
 }
 
-void MainWindow::createButton(QSizePolicy sizePolicy, short int id, int row, int col, QIcon icon){
+void MainWindow::setImages(){
+    // set images to default positions
+
+    short int id = 0;
+
+    // top row
+    QPushButton *btn = (QPushButton *) btnGroup.button(id++);
+    btn->setIcon(blackRookIcon);
+    btn = (QPushButton *) btnGroup.button(id++);
+    btn->setIcon(blackKnightIcon);
+    btn = (QPushButton *) btnGroup.button(id++);
+    btn->setIcon(blackBishopIcon);
+    btn = (QPushButton *) btnGroup.button(id++);
+    btn->setIcon(blackQueenIcon);
+    btn = (QPushButton *) btnGroup.button(id++);
+    btn->setIcon(blackKingIcon);
+    btn = (QPushButton *) btnGroup.button(id++);
+    btn->setIcon(blackBishopIcon);
+    btn = (QPushButton *) btnGroup.button(id++);
+    btn->setIcon(blackKnightIcon);
+    btn = (QPushButton *) btnGroup.button(id++);
+    btn->setIcon(blackRookIcon);
+
+
+    // second row
+    for (int i=0; i<BOARDSIZE; i++){
+        btn = (QPushButton *) btnGroup.button(id++);
+        btn->setIcon(blackPawnIcon);
+    }
+
+    // row 3-6 these are blank
+    for (int i=2; i<6; i++){
+        for (int j=0; j<BOARDSIZE; j++){
+            btn = (QPushButton *) btnGroup.button(id++);
+            btn->setIcon(QIcon());
+        }
+    }
+
+    // second last line
+    for (int i=0; i<BOARDSIZE; i++){
+        btn = (QPushButton *) btnGroup.button(id++);
+        btn->setIcon(whitePawnIcon);
+    }
+
+
+    // last row
+    btn = (QPushButton *) btnGroup.button(id++);
+    btn->setIcon(whiteRookIcon);
+    btn = (QPushButton *) btnGroup.button(id++);
+    btn->setIcon(whiteKnightIcon);
+    btn = (QPushButton *) btnGroup.button(id++);
+    btn->setIcon(whiteBishopIcon);
+    btn = (QPushButton *) btnGroup.button(id++);
+    btn->setIcon(whiteQueenIcon);
+    btn = (QPushButton *) btnGroup.button(id++);
+    btn->setIcon(whiteKingIcon);
+    btn = (QPushButton *) btnGroup.button(id++);
+    btn->setIcon(whiteBishopIcon);
+    btn = (QPushButton *) btnGroup.button(id++);
+    btn->setIcon(whiteKnightIcon);
+    btn = (QPushButton *) btnGroup.button(id++);
+    btn->setIcon(whiteRookIcon);
+
+}
+
+void MainWindow::createButton(QSizePolicy sizePolicy, short int id, int row, int col){
     // create button and add to layout
 
     // create button
-    QPushButton *button = new QPushButton(icon,"");
+    QPushButton *button = new QPushButton("");
     button->installEventFilter(this);
     button->setSizePolicy(sizePolicy);
 
@@ -277,6 +503,16 @@ void MainWindow::restoreButtonColor(QPushButton *btn, int id){
 
 MainWindow::~MainWindow()
 {
+
+    QPushButton *btn;
+    QLayout *layout2 = (QLayout*) layout;
+
+    for (int i=0; i<BOARDSIZE*BOARDSIZE; i++){
+        btn = (QPushButton *) btnGroup.button(i);
+        layout2->removeWidget(btn);
+        delete btn;
+    }
+
     //delete ui;
     delete layout;
     delete window;

@@ -1,7 +1,7 @@
 #include "Move.h"
 
-Move::Move(int startPos, int endPos, int passantArray[2], int passantColor, int special, bool capture, int promo, ChessPiece capturedPiece, bool mate)
-    : start(startPos), end(endPos), enPassantColor(passantColor), specialMove(special), captured(capture), promoTo(promo), piece(ChessPiece(capturedPiece)), mate(mate)
+Move::Move(int startPos, int endPos, int passantArray[2], int passantColor, int special, bool capture, int promo, ChessPiece capturedPiece, bool mate, int moved)
+    : start(startPos), end(endPos), enPassantColor(passantColor), specialMove(special), captured(capture), promoTo(promo), piece(ChessPiece(capturedPiece)), mate(mate), moved(moved)
 {
     enPassant[0] = passantArray[0];
     enPassant[1] = passantArray[1];

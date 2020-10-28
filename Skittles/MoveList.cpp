@@ -2,10 +2,10 @@
 
 MoveList::MoveList(){}
 
-void MoveList::createMove(int startPos, int endPos, int passantArray[2], int passantColor, int special, bool capture, int promoTo, ChessPiece capturedPiece, bool mate){
+void MoveList::createMove(int startPos, int endPos, int passantArray[2], int passantColor, int special, bool capture, int promoTo, ChessPiece capturedPiece, bool mate, int moved){
     // add move to the list
 
-    Move *move = new Move(startPos, endPos, passantArray, passantColor, special, capture, promoTo, capturedPiece, mate);
+    Move *move = new Move(startPos, endPos, passantArray, passantColor, special, capture, promoTo, capturedPiece, mate, moved);
 
     if (start == nullptr){
         // there are no moves in the list
@@ -16,7 +16,17 @@ void MoveList::createMove(int startPos, int endPos, int passantArray[2], int pas
     else{
         // already moves in list
         if (current!=end){
-            remove(current->getNext());
+            if (current != nullptr){
+                remove(current->getNext());
+            }
+            else{
+                // move list isn't empty, but game has been rewound to start
+                remove(start);
+                start = move;
+                current = start;
+                end = start;
+                return;
+            }
         }
         current->setNext(move);
         move->setPrevious(current);
@@ -30,27 +40,34 @@ void MoveList::createMove(int startPos, int endPos, int passantArray[2], int pas
 
 Move* MoveList::getPrevious(){
     // get previous move
+    // previous move is technically what current is pointing to
 
-    if (current == start){
-        // nothing in list or at start of list
-        return nullptr;
-    }
-    else{
+    Move *move = current;
+
+    if (current != nullptr){
         current = current->getPrevious();
         numMoves--;
-        return current;
     }
+
+    return move;
 }
 
 Move* MoveList::getNext(){
     // get next move
+    // next move is the one after current
 
     if (current == end){
         // nothing in list or at end of list
         return nullptr;
     }
     else{
-        current = current->getNext();
+        if (current != nullptr){
+            current = current->getNext();
+        }
+        else{
+            // current is pointing to before the first move
+            current = start;
+        }
         numMoves++;
         return current;
     }
@@ -58,7 +75,7 @@ Move* MoveList::getNext(){
 }
 
 Move* MoveList::getCurrent(){
-    // get current move
+    // get 'current' move
 
     return current;
 }

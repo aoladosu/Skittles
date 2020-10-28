@@ -9,7 +9,7 @@ private:
     Move *next = nullptr;
 
 public:
-    Move(int startPos, int endPos, int passantArray[2], int passantColor, int special, bool capture, int promo, ChessPiece caturedPiece, bool mate);
+    Move(int startPos, int endPos, int passantArray[2], int passantColor, int special, bool capture, int promo, ChessPiece caturedPiece, bool mate, int moved);
     int start;                      // where the piece started this move
     int end;                        // where the piece ended this move
     int enPassant[2] = {};          // enpassant information
@@ -18,7 +18,8 @@ public:
     bool captured;                  // whether the move captured anotherpiece or not
     int promoTo;                    // piece type piece was promoted to
     ChessPiece piece;               // piece that was captured
-    bool mate;
+    bool mate;                      // whether this move caused mate
+    bool moved;                     // whether the piece that was moved had moved before
 
 
     Move* getPrevious();
