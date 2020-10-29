@@ -38,6 +38,8 @@ void Board::init()
     assignArray(wkPos, 7, 4);
     moveList.clear();
     captured = ChessPiece();
+    numPieces = 32;
+    numPiecesOld = 32;
 }
 
 bool Board::validate(int start, int end)
@@ -48,6 +50,7 @@ bool Board::validate(int start, int end)
     bool valid = false;
 
     if (MATE) return false;							// the game has been won
+    if (numPieces == 2) return false;               // draw
     if (specialMove == PROMOTION) return false;		// a pawn wasn't promoted, that needs to be done first
     specialMove = NOSPECIAL;						// reset to no special, it should be checked by front end after every turn ...
 
@@ -77,6 +80,7 @@ bool Board::validate(int start, int end)
     // store passant values
     assignArray(enPassantPosOld, enPassantPos[0], enPassantPos[1]);
     enPassantColorOld = enPassantColor;
+    numPiecesOld = numPieces;
 
     switch (piece.getNameValue()){
     case 1:
@@ -139,6 +143,7 @@ bool Board::validate(int start, int end)
             specialMove = NOSPECIAL;
             assignArray(enPassantPos, enPassantPosOld[0], enPassantPosOld[1]);
             enPassantColor = enPassantColorOld;
+            numPieces = numPiecesOld;
 
             return false;
         }
@@ -424,6 +429,7 @@ void Board::movePiece(int startRow, int endRow, int startCol, int endCol)
     movedStore = piece.getMoved();
     piece.setMoved(true);
     captured = board[endRow][endCol];
+    if (board[endRow][endCol].getNameValue() != EMPTY) numPieces--;
     board[endRow][endCol] = piece;
     board[startRow][startCol] = ChessPiece();
 
@@ -431,6 +437,7 @@ void Board::movePiece(int startRow, int endRow, int startCol, int endCol)
     if (specialMove == ENPASSANT) {
         captured = board[startRow][endCol];
         board[startRow][endCol] = ChessPiece();
+        numPieces--;
     }
     else if ((specialMove == BQCASTLE) || (specialMove == WQCASTLE)) {
         // queen side castle -> to left
@@ -793,6 +800,7 @@ void Board::goBack(int &start, int &end, int &special, int &promoPiece, int &cap
     promoPiece = move->promoTo;
     ChessPiece captPiece = ChessPiece(move->piece);
     capturedPiece = captPiece.getNameValue();
+    if (capturedPiece != EMPTY) numPieces++;
 
     // set board variables back
     if (move2 != nullptr){
@@ -892,6 +900,7 @@ void Board::goForward(int &start, int &end, int &special, int &promoPiece, int &
     numToRowCol(start, end, startRow, endRow, startCol, endCol);
     toPlay = BLACK + WHITE - board[startRow][startCol].getColor();
     color = toPlay;
+    if (board[endRow][endCol].getNameValue() != EMPTY) numPieces--;
     board[endRow][endCol] = board[startRow][startCol];
     board[startRow][startCol] = ChessPiece();
     board[endRow][endCol].setMoved(true);
@@ -1047,14 +1056,12 @@ int Board::getSpecial()
 
 bool Board::gameOver()
 {
-    return (MATE);
+    return (MATE || (numPieces == 2));
 }
 
 int Board::getWinner() {
     // returns -1 if the game is not over/draw, or the color of the player who won
-    if (MATE) {
-        return toPlay;
-    }
+    if (MATE) return toPlay;
     return -1;
 }
 
