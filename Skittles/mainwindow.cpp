@@ -10,16 +10,18 @@ MainWindow::MainWindow(QWidget *parent): QMainWindow(parent)
 {
     //ui->setupUi(this);ui(new Ui::MainWindow)
 
-    window = new QWidget;
+    window = new QWidget();
+    layout = new QGridLayout(this);
+
     buttonStartup();
     setImages();
-    QPushButton *back = new QPushButton(blackBishopIcon, "");
-    QPushButton *forward = new QPushButton(blackKnightIcon, "");
-    layout->addWidget(back, 0, 8);
-    layout->addWidget(forward, 1, 8);
+
+    sidebar = new Sidebar(this);
+    layout->addWidget(sidebar, 0, 8, 8, 2);
+
     connect(&btnGroup, SIGNAL(idClicked(int)), this, SLOT(buttonPressed(int)));
-    connect(back, SIGNAL(clicked()), this, SLOT(undoMove()));
-    connect(forward, SIGNAL(clicked()), this, SLOT(redoMove()));
+    connect(sidebar->getBackButton(), SIGNAL(clicked()), this, SLOT(undoMove()));
+    connect(sidebar->getForwardButton(), SIGNAL(clicked()), this, SLOT(redoMove()));
     engine.init();
 
 }
@@ -333,11 +335,9 @@ void MainWindow::buttonStartup(){
 
 
     // layout information
-    layout = new QGridLayout(this);
     QLayout *layout2 = (QLayout*) layout;
     btnGroup.setExclusive(false);
     layout->setSpacing(0);
-    layout2->setContentsMargins(0,0,300,0);
 
     // size policy for buttons
     QSizePolicy sizePolicy = QSizePolicy();
@@ -469,7 +469,7 @@ void MainWindow::createButton(QSizePolicy sizePolicy, short int id, int row, int
     // create button and add to layout
 
     // create button
-    QPushButton *button = new QPushButton("");
+    QPushButton *button = new QPushButton("",this);
     button->installEventFilter(this);
     button->setSizePolicy(sizePolicy);
 
@@ -514,6 +514,7 @@ MainWindow::~MainWindow()
     }
 
     //delete ui;
+    delete sidebar;
     delete layout;
     delete window;
 }

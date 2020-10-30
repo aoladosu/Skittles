@@ -9,6 +9,7 @@
 #include <QMouseEvent>
 #include <QPushButton>
 #include "Engine.h"
+#include "Sidebar.h"
 
 
 QT_BEGIN_NAMESPACE
@@ -25,6 +26,7 @@ private:
     QWidget *window;
     QButtonGroup btnGroup;
     QGridLayout *layout;
+    Sidebar *sidebar;
 
     // colors for board
     QColor defaultDarkerColor = QColor(46, 46, 46);

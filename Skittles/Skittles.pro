@@ -14,6 +14,7 @@ SOURCES += \
     Engine.cpp \
     Move.cpp \
     MoveList.cpp \
+    Sidebar.cpp \
     main.cpp \
     mainwindow.cpp
 
@@ -23,6 +24,7 @@ HEADERS += \
     Engine.h \
     Move.h \
     MoveList.h \
+    Sidebar.h \
     mainwindow.h
 
 FORMS += \

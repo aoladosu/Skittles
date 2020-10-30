@@ -13,4 +13,8 @@
         <file alias="white_queen">transparent/white_queen.png</file>
         <file alias="white_rook">transparent/white_rook.png</file>
     </qresource>
+    <qresource prefix="/buttonImages">
+        <file alias="back_arrow">transparent/back_arrow.png</file>
+        <file alias="forward_arrow">transparent/forward_arrow.png</file>
+    </qresource>
 </RCC>
