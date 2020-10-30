@@ -13,6 +13,7 @@ class Sidebar : public QWidget
     Q_OBJECT
 
 private:
+
     // variables for layouts in sidebar
     QGridLayout *gridLayout;
     QLabel *title;
@@ -32,6 +33,8 @@ public:
     ~Sidebar();
     QPushButton* getBackButton();
     QPushButton* getForwardButton();
+    void addMove(int piece, int start, int end, int color, bool capture, bool check, bool checkmate, int special, int promoPiece);
+
 
 
 signals:

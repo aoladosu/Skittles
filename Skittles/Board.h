@@ -28,6 +28,7 @@ private:
 
     // board state
     bool MATE = false;									// endgame conditions
+    bool CHECK = false;
     int toPlay = WHITE;									// what side is playing
     int bkPos[2] = {0, 4}, wkPos[2] = {7, 4};			// king positions
     int numPieces = 32;
@@ -50,6 +51,8 @@ private:
     int promoTo;                                        // piece promoted to
     ChessPiece captured;                                // piece that is captured by move
 
+    ChessPiece movedPiece;
+
     // the board
     ChessPiece board[8][8];
 
@@ -66,6 +69,7 @@ public:
     bool promote(int pieceNameVal);
     void goBack(int &start, int &end, int &special, int &promoPiece, int &capturedPiece, int &color);
     void goForward(int &start, int &end, int &special, int &promoPiece, int &capturedPiece, int &color);
+    void moveStats(int &pieceMoved, int &color, bool &capture, bool &check, bool &checkmate);
 
 private:
     bool pawnMoveValid(ChessPiece pawn, int startRow, int endRow, int startCol, int endCol);

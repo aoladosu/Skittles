@@ -426,6 +426,7 @@ void Board::movePiece(int startRow, int endRow, int startCol, int endCol)
     // move the chess piece to the new location
 
     ChessPiece piece = board[startRow][startCol];
+    movedPiece = piece;
     movedStore = piece.getMoved();
     piece.setMoved(true);
     captured = board[endRow][endCol];
@@ -636,8 +637,8 @@ bool Board::isChecked(int row, int col, ChessPiece cboard[8][8], int color, int 
 
     rowList[index] = -1;
     colList[index] = -1;
-
-    return (index != 0);
+    CHECK = (index != 0);
+    return CHECK;
 }
 
 bool Board::isMate(int row, int col, ChessPiece cboard[8][8], int rowList[], int colList[]) {
@@ -949,6 +950,16 @@ void Board::goForward(int &start, int &end, int &special, int &promoPiece, int &
         else assignArray(wkPos, endRow, endCol);
     }
 
+}
+
+void Board::moveStats(int &pieceMoved, int &color, bool &capture, bool &check, bool &checkmate){
+    // return information about move stats
+
+    pieceMoved = movedPiece.getNameValue();
+    color = movedPiece.getColor();
+    capture = (captured.getNameValue() != EMPTY);
+    check = CHECK;
+    checkmate = MATE;
 }
 
 bool Board::promote(int pieceNameVal)

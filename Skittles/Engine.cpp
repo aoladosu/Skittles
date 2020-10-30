@@ -40,3 +40,7 @@ void Engine::goBack(int &start, int &end, int &special, int &promoPiece, int &ca
 void Engine::goForward(int &start, int &end, int &special, int &promoPiece, int &capturedPiece, int &color){
     board.goForward(start, end, special, promoPiece, capturedPiece, color);
 }
+
+void Engine::moveStats(int &pieceMoved, int &color, bool &capture, bool &check, bool &checkmate){
+    board.moveStats(pieceMoved, color, capture, check, checkmate);
+}

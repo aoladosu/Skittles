@@ -30,6 +30,8 @@ void MainWindow::buttonPressed(int id){
     // handle a button being clicked
 
     QPushButton *btn2 = (QPushButton *) btnGroup.button(id);
+    int special, pieceMoved, color;
+    bool capture, check, checkmate;
 
 
     if (firstClick == -1){
@@ -57,7 +59,10 @@ void MainWindow::buttonPressed(int id){
 
     if (valid){
         // move was valid in chess engine, so move pieces
-        handleMove(btn1, btn2, engine.getSpecialMove(), firstClick, secondClick);
+        special = engine.getSpecialMove();
+        handleMove(btn1, btn2, special, firstClick, secondClick);
+        engine.moveStats(pieceMoved, color, capture, check, checkmate);
+        sidebar->addMove(pieceMoved, firstClick, secondClick, color, capture, check, checkmate, special, -1);
     }
 
     firstClick = -1;
