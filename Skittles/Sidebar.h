@@ -33,7 +33,7 @@ public:
     ~Sidebar();
     QPushButton* getBackButton();
     QPushButton* getForwardButton();
-    void addMove(int piece, int start, int end, int color, bool capture, bool check, bool checkmate, int special, int promoPiece);
+    void addMove(short int piece, short int start, short int end, short int color, bool capture, bool check, bool checkmate, short int special, short int promoPiece);
 
 
 

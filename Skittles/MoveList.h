@@ -9,17 +9,17 @@ private:
     Move *start = nullptr;
     Move *current = nullptr;
     Move *end = nullptr;
-    int numMoves = 0;
+    short int numMoves = 0;
 
 public:
 
     MoveList();
     ~MoveList();
-    void createMove(int startPos, int endPos, int passantArray[2], int passantColor, int special, bool capture, int promoTo, ChessPiece capturedPiece, bool mate, int moved);
+    void createMove(short int startPos, short int endPos, short int passantArray[2], short int passantColor, short int special, bool capture, short int promoTo, ChessPiece capturedPiece, bool mate, short int moved);
     Move* getPrevious();
     Move* getNext();
     Move* getCurrent();
-    int getNumMoves();
+    short int getNumMoves();
     bool isStart();
     bool isEnd();
     bool isEmpty();

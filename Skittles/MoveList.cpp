@@ -2,7 +2,7 @@
 
 MoveList::MoveList(){}
 
-void MoveList::createMove(int startPos, int endPos, int passantArray[2], int passantColor, int special, bool capture, int promoTo, ChessPiece capturedPiece, bool mate, int moved){
+void MoveList::createMove(short int startPos, short int endPos, short int passantArray[2], short int passantColor, short int special, bool capture, short int promoTo, ChessPiece capturedPiece, bool mate, short int moved){
     // add move to the list
 
     Move *move = new Move(startPos, endPos, passantArray, passantColor, special, capture, promoTo, capturedPiece, mate, moved);
@@ -80,7 +80,7 @@ Move* MoveList::getCurrent(){
     return current;
 }
 
-int MoveList::getNumMoves(){
+short int MoveList::getNumMoves(){
     return numMoves;
 }
 

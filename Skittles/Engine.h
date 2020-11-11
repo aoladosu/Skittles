@@ -11,12 +11,12 @@ public:
 
     Engine();
     void init();                                                        // initialize a new game
-    bool validate(int start, int end);                                  // validate a move
-    int getSpecialMove();                                               // check if a special move happened
-    bool promote(int pieceNameVal);                                     // promote a piece
+    bool validate(short int start, short int end);                      // validate a move
+    short int getSpecialMove();                                         // check if a special move happened
+    bool promote(short int pieceNameVal);                               // promote a piece
     bool gameOver();                                                    // check if game is over
-    int getWinner();                                                    // check who won
-    void goBack(int &start, int &end, int &special, int &promoPiece, int &capturedPiece, int &color);           // go back one move
-    void goForward(int &start, int &end, int &special, int &promoPiece, int &capturedPiece, int &color);        // go forward one move
-    void moveStats(int &pieceMoved, int &color, bool &capture, bool &check, bool &checkmate);                   // get statistics about last move
+    short int getWinner();                                              // check who won
+    void goBack(short int &start, short int &end, short int &special, short int &promoPiece, short int &capturedPiece, short int &color);           // go back one move
+    void goForward(short int &start, short int &end, short int &special, short int &promoPiece, short int &capturedPiece, short int &color);        // go forward one move
+    void moveStats(short int &pieceMoved, short int &color, bool &capture, bool &check, bool &checkmate);                                           // get statistics about last move
 };

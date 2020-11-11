@@ -24,13 +24,18 @@ MainWindow::MainWindow(QWidget *parent): QMainWindow(parent)
     connect(sidebar->getForwardButton(), SIGNAL(clicked()), this, SLOT(redoMove()));
     engine.init();
 
+    //show layout
+    QLayout *layout2 = (QLayout*) layout;
+    window->setLayout(layout2);
+    window->show();
+
 }
 
 void MainWindow::buttonPressed(int id){
     // handle a button being clicked
 
     QPushButton *btn2 = (QPushButton *) btnGroup.button(id);
-    int special, pieceMoved, color;
+    short int special, pieceMoved, color;
     bool capture, check, checkmate;
 
 
@@ -74,7 +79,7 @@ void MainWindow::undoMove(){
     // process undoing a move
 
     // variables to get info back
-    int start, end, special, promoPiece, capturedPiece, color;
+    short int start, end, special, promoPiece, capturedPiece, color;
     engine.goBack(start, end, special, promoPiece, capturedPiece, color);
 
     qDebug() << "undo stats...";
@@ -98,7 +103,7 @@ void MainWindow::redoMove(){
     // process redoing a move
 
     // variables to get info back
-    int start, end, special, promoPiece, capturedPiece, color;
+    short int start, end, special, promoPiece, capturedPiece, color;
     engine.goForward(start, end, special, promoPiece, capturedPiece, color);
 
     qDebug() << "redo stats...";
@@ -120,7 +125,7 @@ void MainWindow::redoMove(){
 
 }
 
-void MainWindow::handleMove(QPushButton *btn1, QPushButton *btn2, int special, int start, int end){
+void MainWindow::handleMove(QPushButton *btn1, QPushButton *btn2, short int special, short int start, short int end){
     // move pieces and handle special cases
 
     btn2->setIcon(btn1->icon());
@@ -160,7 +165,7 @@ void MainWindow::handleMove(QPushButton *btn1, QPushButton *btn2, int special, i
 
 }
 
-void MainWindow::handleUndoMove(int start, int end, int special, int capturedPiece, int color){
+void MainWindow::handleUndoMove(short int start, short int end, short int special, short int capturedPiece, short int color){
     // handle moving pieces back one move
     // color is the piece that moved on this turn
 
@@ -263,7 +268,7 @@ void MainWindow::handleUndoMove(int start, int end, int special, int capturedPie
 
 }
 
-void MainWindow::enPassant(int clickOne, int clickTwo){
+void MainWindow::enPassant(short int clickOne, short int clickTwo){
     // remove piece captured by enpassant
 
     int id;
@@ -282,7 +287,7 @@ void MainWindow::enPassant(int clickOne, int clickTwo){
 
 }
 
-void MainWindow::castle(int castleType){
+void MainWindow::castle(short int castleType){
     // move knight from castling
 
     short int from, to;
@@ -340,7 +345,6 @@ void MainWindow::buttonStartup(){
 
 
     // layout information
-    QLayout *layout2 = (QLayout*) layout;
     btnGroup.setExclusive(false);
     layout->setSpacing(0);
 
@@ -352,7 +356,7 @@ void MainWindow::buttonStartup(){
     sizePolicy.setVerticalPolicy(QSizePolicy::Ignored);
 
 
-    // creeete buttons
+    // create buttons
     // button values
     short int id = 0;
     short int col = 0;
@@ -370,19 +374,19 @@ void MainWindow::buttonStartup(){
 
 
     // second row
-    for (int i=0; i<BOARDSIZE; i++){
+    for (short int i=0; i<BOARDSIZE; i++){
         createButton(sizePolicy, id++, 1, i);
     }
 
     // row 3-6 these are blank
-    for (int i=2; i<6; i++){
-        for (int j=0; j<BOARDSIZE; j++){
+    for (short int i=2; i<6; i++){
+        for (short int j=0; j<BOARDSIZE; j++){
             createButton(sizePolicy, id++, i, j);
         }
     }
 
     // second last line
-    for (int i=0; i<BOARDSIZE; i++){
+    for (short int i=0; i<BOARDSIZE; i++){
         createButton(sizePolicy, id++, 6, i);
     }
 
@@ -397,11 +401,6 @@ void MainWindow::buttonStartup(){
     createButton(sizePolicy, id++, row, col++);
     createButton(sizePolicy, id++, row, col++);
     createButton(sizePolicy, id++, row, col++);
-
-
-    //show layout
-    window->setLayout(layout2);
-    window->show();
 
 }
 
@@ -430,21 +429,21 @@ void MainWindow::setImages(){
 
 
     // second row
-    for (int i=0; i<BOARDSIZE; i++){
+    for (short int i=0; i<BOARDSIZE; i++){
         btn = (QPushButton *) btnGroup.button(id++);
         btn->setIcon(blackPawnIcon);
     }
 
     // row 3-6 these are blank
-    for (int i=2; i<6; i++){
-        for (int j=0; j<BOARDSIZE; j++){
+    for (short int i=2; i<6; i++){
+        for (short int j=0; j<BOARDSIZE; j++){
             btn = (QPushButton *) btnGroup.button(id++);
             btn->setIcon(QIcon());
         }
     }
 
     // second last line
-    for (int i=0; i<BOARDSIZE; i++){
+    for (short int i=0; i<BOARDSIZE; i++){
         btn = (QPushButton *) btnGroup.button(id++);
         btn->setIcon(whitePawnIcon);
     }
@@ -470,7 +469,7 @@ void MainWindow::setImages(){
 
 }
 
-void MainWindow::createButton(QSizePolicy sizePolicy, short int id, int row, int col){
+void MainWindow::createButton(QSizePolicy sizePolicy, short int id, short int row, short int col){
     // create button and add to layout
 
     // create button
@@ -488,11 +487,11 @@ void MainWindow::createButton(QSizePolicy sizePolicy, short int id, int row, int
     layout->addWidget(button,row,col);
 }
 
-void MainWindow::restoreButtonColor(QPushButton *btn, int id){
+void MainWindow::restoreButtonColor(QPushButton *btn, short int id){
     // change button background color to original color
 
-    int row = id/BOARDSIZE;
-    int col = id%BOARDSIZE;
+    short int row = id/BOARDSIZE;
+    short int col = id%BOARDSIZE;
     QPalette pal = btn->palette();
 
     if (((col+row) % 2) == 0){
@@ -512,7 +511,7 @@ MainWindow::~MainWindow()
     QPushButton *btn;
     QLayout *layout2 = (QLayout*) layout;
 
-    for (int i=0; i<BOARDSIZE*BOARDSIZE; i++){
+    for (short int i=0; i<BOARDSIZE*BOARDSIZE; i++){
         btn = (QPushButton *) btnGroup.button(i);
         layout2->removeWidget(btn);
         delete btn;

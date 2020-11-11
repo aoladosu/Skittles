@@ -1,6 +1,6 @@
 #include "Move.h"
 
-Move::Move(int startPos, int endPos, int passantArray[2], int passantColor, int special, bool capture, int promo, ChessPiece capturedPiece, bool mate, int moved)
+Move::Move(short int startPos, short int endPos, short int passantArray[2], short int passantColor, short int special, bool capture, short int promo, ChessPiece capturedPiece, bool mate, short int moved)
     : start(startPos), end(endPos), enPassantColor(passantColor), specialMove(special), captured(capture), promoTo(promo), piece(ChessPiece(capturedPiece)), mate(mate), moved(moved)
 {
     enPassant[0] = passantArray[0];

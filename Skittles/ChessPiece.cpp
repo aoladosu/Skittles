@@ -4,7 +4,7 @@ ChessPiece::ChessPiece(){}
 
 ChessPiece::~ChessPiece() {}
 
-ChessPiece::ChessPiece(int val, int nameval, int piece_color)
+ChessPiece::ChessPiece(short int val, short int nameval, short int piece_color)
 {
     value = val;
     color = piece_color;
@@ -21,17 +21,17 @@ void ChessPiece::setMoved(bool val)
     moved = val;
 }
 
-int ChessPiece::getValue()
+short int ChessPiece::getValue()
 {
     return value;
 }
 
-int ChessPiece::getNameValue()
+short int ChessPiece::getNameValue()
 {
     return nameVal;
 }
 
-int ChessPiece::getColor()
+short int ChessPiece::getColor()
 {
     return color;
 }

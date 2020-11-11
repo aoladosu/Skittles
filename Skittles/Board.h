@@ -9,46 +9,46 @@ class Board
 private:
 
     // variables for piece type
-    const int BOARDSIZE = 8;
-    const int BLACK = 1;
-    const int WHITE = 0;
-    const int EMPTY = 0;
-    const int PAWN = 1;
-    const int ROOK = 2;
-    const int KNIGHT = 3;
-    const int BISHOP = 4;
-    const int QUEEN = 5;
-    const int KING = 6;
+    const short int BOARDSIZE = 8;
+    const short int BLACK = 1;
+    const short int WHITE = 0;
+    const short int EMPTY = 0;
+    const short int PAWN = 1;
+    const short int ROOK = 2;
+    const short int KNIGHT = 3;
+    const short int BISHOP = 4;
+    const short int QUEEN = 5;
+    const short int KING = 6;
 
     // tracking enpassant variables
-    int enPassantPos[2] = {-2,-2};	// all manipulations will stay out of bounds
-    int enPassantColor = -1;
-    int enPassantPosOld[2] = { -2,-2 };	// stores the old cycle of enpassant
-    int enPassantColorOld = -1;
+    short int enPassantPos[2] = {-2,-2};            // all manipulations will stay out of bounds
+    short int enPassantColor = -1;
+    short int enPassantPosOld[2] = { -2,-2 };       // stores the old cycle of enpassant
+    short int enPassantColorOld = -1;
 
     // board state
     bool MATE = false;									// endgame conditions
     bool CHECK = false;
-    int toPlay = WHITE;									// what side is playing
-    int bkPos[2] = {0, 4}, wkPos[2] = {7, 4};			// king positions
-    int numPieces = 32;
-    int numPiecesOld = 32;
+    short int toPlay = WHITE;							// what side is playing
+    short int bkPos[2] = {0, 4}, wkPos[2] = {7, 4};		// king positions
+    short int numPieces = 32;
+    short int numPiecesOld = 32;
 
     // special moves
-    const int NOSPECIAL = 0;
-    const int PROMOTION = 1;
-    const int ENPASSANT = 2;
-    const int BQCASTLE = 3;
-    const int WQCASTLE = 4;
-    const int BKCASTLE = 5;
-    const int WKCASTLE = 6;
-    int specialMove = NOSPECIAL;
-    int promotionPos[2] = { -2, -2 };
+    const short int NOSPECIAL = 0;
+    const short int PROMOTION = 1;
+    const short int ENPASSANT = 2;
+    const short int BQCASTLE = 3;
+    const short int WQCASTLE = 4;
+    const short int BKCASTLE = 5;
+    const short int WKCASTLE = 6;
+    short int specialMove = NOSPECIAL;
+    short int promotionPos[2] = { -2, -2 };
 
     // variables for movelist
     MoveList moveList;                                  // store moves played
     bool movedStore;                                    // whether piece moved before
-    int promoTo;                                        // piece promoted to
+    short int promoTo;                                  // piece promoted to
     ChessPiece captured;                                // piece that is captured by move
 
     ChessPiece movedPiece;
@@ -61,31 +61,31 @@ public:
     ~Board();
     void init();
     int value();
-    bool validate(int start, int end);
+    bool validate(short int start, short int end);
     void switchToPlay();
-    int getSpecial();
+    short int getSpecial();
     bool gameOver();
-    int getWinner();
-    bool promote(int pieceNameVal);
-    void goBack(int &start, int &end, int &special, int &promoPiece, int &capturedPiece, int &color);
-    void goForward(int &start, int &end, int &special, int &promoPiece, int &capturedPiece, int &color);
-    void moveStats(int &pieceMoved, int &color, bool &capture, bool &check, bool &checkmate);
+    short int getWinner();
+    bool promote(short int pieceNameVal);
+    void goBack(short int &start, short int &end, short int &special, short int &promoPiece, short int &capturedPiece, short int &color);
+    void goForward(short int &start, short int &end, short int &special, short int &promoPiece, short int &capturedPiece, short int &color);
+    void moveStats(short int &pieceMoved, short int &color, bool &capture, bool &check, bool &checkmate);
 
 private:
-    bool pawnMoveValid(ChessPiece pawn, int startRow, int endRow, int startCol, int endCol);
-    bool rookMoveValid(ChessPiece rook, int startRow, int endRow, int startCol, int endCol);
-    bool knightMoveValid(ChessPiece knight, int startRow, int endRow, int startCol, int endCol);
-    bool bishopMoveValid(ChessPiece bishop, int startRow, int endRow, int startCol, int endCol);
-    bool queenMoveValid(ChessPiece queen, int startRow, int endRow, int startCol, int endCol);
-    bool kingMoveValid(ChessPiece king, int startRow, int endRow, int startCol, int endCol);
-    void movePiece(int startRow, int endRow, int startCol, int endCol);
-    bool isChecked(int row, int col, ChessPiece cboard[8][8], int color, int rowList[], int colList[]);
-    bool isMate(int row, int col, ChessPiece cboard[8][8], int rowList[], int colList[]);
-    bool isPawnLos(int row, int col, ChessPiece cboard[8][8], int color);
-    bool numToRowCol(int start, int end, int &startRow, int &endRow, int &startCol, int &endcol);
-    int rowColToNum(int row, int col);
-    bool inBounds(int row, int col);
-    bool areEqual(int arr1[2], int arr2[2]);
-    void assignArray(int arr[2], int val1, int val2);
-    void addMove(int start, int end);
+    bool pawnMoveValid(ChessPiece pawn, short int startRow, short int endRow, short int startCol, short int endCol);
+    bool rookMoveValid(ChessPiece rook, short int startRow, short int endRow, short int startCol, short int endCol);
+    bool knightMoveValid(ChessPiece knight, short int startRow, short int endRow, short int startCol, short int endCol);
+    bool bishopMoveValid(ChessPiece bishop, short int startRow, short int endRow, short int startCol, short int endCol);
+    bool queenMoveValid(ChessPiece queen, short int startRow, short int endRow, short int startCol, short int endCol);
+    bool kingMoveValid(ChessPiece king, short int startRow, short int endRow, short int startCol, short int endCol);
+    void movePiece(short int startRow, short int endRow, short int startCol, short int endCol);
+    bool isChecked(short int row, short int col, ChessPiece cboard[8][8], short int color, short int rowList[], short int colList[]);
+    bool isMate(short int row, short int col, ChessPiece cboard[8][8], short int rowList[], short int colList[]);
+    bool isPawnLos(short int row, short int col, ChessPiece cboard[8][8], short int color);
+    bool numToRowCol(short int start, short int end, short int &startRow, short int &endRow, short int &startCol, short int &endcol);
+    short int rowColToNum(short int row, short int col);
+    bool inBounds(short int row, short int col);
+    bool areEqual(short int arr1[2], short int arr2[2]);
+    void assignArray(short int arr[2], short int val1, short int val2);
+    void addMove(short int start, short int end);
 };

@@ -51,26 +51,26 @@ private:
     QIcon whiteKingIcon = QIcon(":/imagesPieces/white_king");
 
     // what pieces to move
-    int firstClick = -1;
-    int secondClick = -1;
+    short int firstClick = -1;
+    short int secondClick = -1;
 
     // chess engine
     Engine engine;
 
     // board variables
-    const int BOARDSIZE = 8;
-    const int WHITE = 0;
-    const int BLACK = 1;
+    const short int BOARDSIZE = 8;
+    const short int WHITE = 0;
+    const short int BLACK = 1;
 
     // private functions
     void buttonStartup();
     void setImages();
-    void createButton( QSizePolicy sizePolicy, short int id, int row, int col);
-    void restoreButtonColor(QPushButton *btn, int id);
-    void handleMove(QPushButton *btn1, QPushButton *btn2, int special, int start, int end);
-    void handleUndoMove(int start, int end, int special, int capturedPiece, int color);
-    void enPassant(int clickOne, int clickTwo);
-    void castle(int castleType);
+    void createButton( QSizePolicy sizePolicy, short int id, short int row, short int col);
+    void restoreButtonColor(QPushButton *btn, short int id);
+    void handleMove(QPushButton *btn1, QPushButton *btn2, short int special, short int start, short int end);
+    void handleUndoMove(short int start, short int end, short int special, short int capturedPiece, short int color);
+    void enPassant(short int clickOne, short int clickTwo);
+    void castle(short int castleType);
 
 
 public:

@@ -53,12 +53,12 @@ Sidebar::Sidebar(QWidget *parent) : QWidget(parent)
 
 }
 
-void Sidebar::addMove(int piece, int start, int end, int color, bool capture, bool check, bool checkmate, int special, int promoPiece){
+void Sidebar::addMove(short int piece, short int start, short int end, short int color, bool capture, bool check, bool checkmate, short int special, short int promoPiece){
     // add move to move list
 
     QString string = "";
-    int row = end/8;
-    int col = end%8;
+    short int row = end/8;
+    short int col = end%8;
 
     // which piece moved
     switch (piece){
