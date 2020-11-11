@@ -815,6 +815,7 @@ void Board::goBack(short int &start, short int &end, short int &special, short i
 
     specialMove = NOSPECIAL;
     MATE = move->mate;
+    CHECK = move->check;
 
     // set pieces including captured back
     short int startRow, endRow, startCol, endCol, specialmv;
@@ -896,6 +897,7 @@ void Board::goForward(short int &start, short int &end, short int &special, shor
     assignArray(enPassantPos, move->enPassant[0], move->enPassant[1]);
     enPassantColor = move->enPassantColor;
     MATE = move->mate;
+    CHECK = move->check;
     short int startRow, endRow, startCol, endCol;
     specialMove = move->specialMove;
     numToRowCol(start, end, startRow, endRow, startCol, endCol);
@@ -1015,7 +1017,7 @@ void Board::addMove(short int start, short int end){
     // add a move to the movelist
 
     bool capture = captured.getNameValue() != EMPTY;
-    moveList.createMove(start, end, enPassantPos, enPassantColor, specialMove, capture, promoTo, captured, MATE, movedStore);
+    moveList.createMove(start, end, enPassantPos, enPassantColor, specialMove, capture, promoTo, captured, MATE, movedStore, CHECK);
 }
 
 bool Board::inBounds(short int row, short int col) {

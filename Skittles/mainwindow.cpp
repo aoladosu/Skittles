@@ -123,6 +123,12 @@ void MainWindow::redoMove(){
     QPushButton *btnEnd = (QPushButton *) btnGroup.button(end);
     handleMove(btnStart, btnEnd, special, start, end);
 
+    short int pieceMoved;
+    bool capture, check, checkmate;
+
+    engine.moveStats(pieceMoved, color, capture, check, checkmate);
+    sidebar->addMove(pieceMoved, start, end, color, capture, check, checkmate, special, promoPiece);
+
 }
 
 void MainWindow::handleMove(QPushButton *btn1, QPushButton *btn2, short int special, short int start, short int end){

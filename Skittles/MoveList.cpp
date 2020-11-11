@@ -4,10 +4,10 @@ MoveList::MoveList(){
     cirQueue = new Move[maxSize];
 }
 
-void MoveList::createMove(short int startPos, short int endPos, short int passantArray[2], short int passantColor, short int special, bool capture, short int promoTo, ChessPiece capturedPiece, bool mate, short int moved){
+void MoveList::createMove(short int startPos, short int endPos, short int passantArray[2], short int passantColor, short int special, bool capture, short int promoTo, ChessPiece capturedPiece, bool mate, short int moved, bool check){
     // add move to the list
 
-    Move move = Move(startPos, endPos, passantArray, passantColor, special, capture, promoTo, capturedPiece, mate, moved);
+    Move move = Move(startPos, endPos, passantArray, passantColor, special, capture, promoTo, capturedPiece, mate, moved, check);
 
     if (isEmpty){
         start = 0;
