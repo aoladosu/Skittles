@@ -2,6 +2,7 @@
 #include <QListView>
 #include <QSizePolicy>
 #include <QString>
+#include <QIcon>
 #include "Sidebar.h"
 
 
@@ -27,12 +28,11 @@ Sidebar::Sidebar(QWidget *parent) : QWidget(parent)
     moveList->setSizeAdjustPolicy(QAbstractScrollArea::AdjustToContents);
     moveList->setSizePolicy(sizePolicy);
 
-    moveList->addItem("1. White's Move Black's Move");
-    moveList->addItem("2. White's Move Black's Move");
-
     result = new QHBoxLayout(this);
 
     bottom = new QHBoxLayout(this);
+    QIcon backIcon = QIcon(":/buttonImages/back_arrow");
+    QIcon forwardIcon = QIcon(":/buttonImages/forward_arrow");
     back = new QPushButton(backIcon, "", this);
     forward = new QPushButton(forwardIcon, "", this);
     QBoxLayout *bottom2 = (QBoxLayout *) bottom;
@@ -202,8 +202,35 @@ void Sidebar::addMove(short int piece, short int start, short int end, short int
             break;
     }
 
+    if (color == 1){
+        // black
+        string = QString::number(moveNum) + ".  Black     " +  string;
+    }
+    else{
+        moveNum += 1;
+        string = QString::number(moveNum) + ".  White    " +  string;
+    }
+
     moveList->addItem(string);
     moveList->scrollToBottom();
+}
+
+void Sidebar::removeMove(short int color){
+
+    if (color == 0){
+        // white
+        moveNum -= 1;
+    }
+
+    moveList->takeItem(moveList->count()-1);
+
+}
+
+void Sidebar::clearMovelist(){
+    // clear movelist
+
+    moveList->clear();
+
 }
 
 QPushButton* Sidebar::getBackButton(){

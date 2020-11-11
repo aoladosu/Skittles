@@ -22,11 +22,7 @@ private:
     QHBoxLayout *bottom;
     QPushButton *back;
     QPushButton *forward;
-
-
-    // images
-    QIcon backIcon = QIcon(":/buttonImages/back_arrow");
-    QIcon forwardIcon = QIcon(":/buttonImages/forward_arrow");
+    short int moveNum = 0;
 
 public:
     explicit Sidebar(QWidget *parent = nullptr);
@@ -34,7 +30,8 @@ public:
     QPushButton* getBackButton();
     QPushButton* getForwardButton();
     void addMove(short int piece, short int start, short int end, short int color, bool capture, bool check, bool checkmate, short int special, short int promoPiece);
-
+    void clearMovelist();
+    void removeMove(short int color);
 
 
 signals:

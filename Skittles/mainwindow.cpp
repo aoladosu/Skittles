@@ -96,7 +96,7 @@ void MainWindow::undoMove(){
     }
 
     handleUndoMove(start, end, special, capturedPiece, color);
-
+    sidebar->removeMove(color);
 }
 
 void MainWindow::redoMove(){
