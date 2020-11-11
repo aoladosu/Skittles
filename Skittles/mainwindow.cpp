@@ -4,7 +4,6 @@
 #include <Qt>
 #include <QSizePolicy>
 
-
 MainWindow::MainWindow(QWidget *parent): QMainWindow(parent)
 {
     //ui->setupUi(this);ui(new Ui::MainWindow)

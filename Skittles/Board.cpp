@@ -59,10 +59,8 @@ bool Board::validate(short int start, short int end)
         return false;
     }
 
-    ChessPiece piece = board[startRow][startCol], startPiece, endPiece, behindPiece;            // keep track of board state
-    bool moved;                                                                                 // store if piece was moved
-    short int rowList[16], colList[16], *currKing, *othKing, oppColor = WHITE + BLACK - toPlay;	// to check checkmate
-    short int kingRow, kingCol;																	// king's position
+    ChessPiece piece = board[startRow][startCol], startPiece, endPiece, behindPiece;            // keep track of board state                                                                              // store if piece was moved
+    short int rowList[16], colList[16], *currKing, *othKing, oppColor = WHITE + BLACK - toPlay;	// to check checkmate																// king's position
 
     if (piece.getColor() != toPlay) {
         return false;
@@ -107,49 +105,10 @@ bool Board::validate(short int start, short int end)
 
     if (valid) {
 
-        // store past state of board
-        startPiece = board[startRow][startCol];
-        moved = startPiece.getMoved();
-        endPiece = board[endRow][endCol];
-        if (startPiece.getNameValue() == PAWN) {
-            if (startPiece.getColor() == BLACK) behindPiece = board[endRow - 1][endCol];
-            else behindPiece = board[endRow + 1][endCol];
-        }
-
-        // move piece
-        movePiece(startRow, endRow, startCol, endCol);
-
-        // get king's position, might have changed if the king was moved
-        if (piece.getNameValue() == KING) {
-            kingRow = endRow;
-            kingCol = endCol;
-        }
-        else {
-            kingRow = currKing[0];
-            kingCol = currKing[1];
-        }
-
-        // check if move causes this king to be in check
-        if (isChecked(kingRow, kingCol, board, toPlay, rowList, colList)) {
-
-            // undo move
-            if (startPiece.getNameValue() == PAWN) {
-                if (startPiece.getColor() == BLACK) board[endRow - 1][endCol] = behindPiece;
-                else board[endRow + 1][endCol] = behindPiece;
-            }
-            board[startRow][startCol] = startPiece;
-            board[startRow][startCol].setMoved(moved);
-            board[endRow][endCol] = endPiece;
-            specialMove = NOSPECIAL;
-            assignArray(enPassantPos, enPassantPosOld[0], enPassantPosOld[1]);
-            enPassantColor = enPassantColorOld;
-            numPieces = numPiecesOld;
-
-            return false;
-        }
+        if (isLeftInCheck(startRow, endRow, startCol, endCol, false)) return false;
 
         // check if opposite king is in checkmate
-        if (isChecked(othKing[0], othKing[1], board, oppColor, rowList, colList)) {
+        if (isChecked(othKing[0], othKing[1], board, oppColor, rowList, colList, true)) {
             if (isMate(othKing[0], othKing[1], board, rowList, colList)) {
                 MATE = true;
             }
@@ -173,6 +132,73 @@ bool Board::validate(short int start, short int end)
     }
 
     return valid;
+}
+
+bool Board::isLeftInCheck(short int startRow, short int endRow, short int startCol, short int endCol, bool undo){
+    // check if moving a piece leaves the king in check
+
+    ChessPiece startPiece, endPiece, behindPiece;
+    bool moved, valid=false;
+    short int kingRow, kingCol, *currKing, *othKing, rowList[16], colList[16];
+
+    // store past state of board
+    startPiece = board[startRow][startCol];
+    moved = startPiece.getMoved();
+    endPiece = board[endRow][endCol];
+    ChessPiece movedPieceOld = movedPiece;
+    ChessPiece capturedOld = captured;
+    if (startPiece.getNameValue() == PAWN) {
+        if (startPiece.getColor() == BLACK) behindPiece = board[endRow - 1][endCol];
+        else behindPiece = board[endRow + 1][endCol];
+    }
+
+    // move piece
+    movePiece(startRow, endRow, startCol, endCol);
+
+    // get king's position, might have changed if the king was moved
+    if (toPlay == BLACK) {
+        currKing = bkPos;
+        othKing = wkPos;
+    }
+    else {
+        currKing = wkPos;
+        othKing = bkPos;
+    }
+    if (startPiece.getNameValue() == KING) {
+        kingRow = endRow;
+        kingCol = endCol;
+    }
+    else {
+        kingRow = currKing[0];
+        kingCol = currKing[1];
+    }
+
+    // check if move causes this king to be in check
+    if (isChecked(kingRow, kingCol, board, toPlay, rowList, colList)) {
+        undo = true;
+        valid = true;
+    }
+
+    if (undo){
+        // undo move
+        if (startPiece.getNameValue() == PAWN) {
+            if (startPiece.getColor() == BLACK) board[endRow - 1][endCol] = behindPiece;
+            else board[endRow + 1][endCol] = behindPiece;
+        }
+        board[startRow][startCol] = startPiece;
+        board[startRow][startCol].setMoved(moved);
+        board[endRow][endCol] = endPiece;
+        specialMove = NOSPECIAL;
+        assignArray(enPassantPos, enPassantPosOld[0], enPassantPosOld[1]);
+        enPassantColor = enPassantColorOld;
+        numPieces = numPiecesOld;
+        captured = capturedOld;
+        movedPiece = movedPieceOld;
+        movedStore = movedPieceOld.getMoved();
+    }
+
+    return valid;
+
 }
 
 bool Board::pawnMoveValid(ChessPiece pawn, short int startRow, short int endRow, short int startCol, short int endCol)
@@ -456,12 +482,11 @@ void Board::movePiece(short int startRow, short int endRow, short int startCol, 
     return;
 }
 
-bool Board::isChecked(short int row, short int col, ChessPiece cboard[8][8], short int color, short int rowList[], short int colList[]) {
+bool Board::isChecked(short int row, short int col, ChessPiece cboard[8][8], short int color, short int rowList[], short int colList[], bool storeCheck) {
 
     // check if the given row/col is attacked by a piece
     // color is the the perspective to look from in case row/col refers to an empty square
     // that is color is color of the piece that is (or would be) occupying the square
-
 
     if (!inBounds(row, col)) return false;
 
@@ -638,8 +663,8 @@ bool Board::isChecked(short int row, short int col, ChessPiece cboard[8][8], sho
 
     rowList[index] = -1;
     colList[index] = -1;
-    CHECK = (index != 0);
-    return CHECK;
+    if (storeCheck) CHECK = (index != 0);
+    return (index != 0);
 }
 
 bool Board::isMate(short int row, short int col, ChessPiece cboard[8][8], short int rowList[], short int colList[]) {
@@ -1027,6 +1052,8 @@ void Board::addMove(short int start, short int end){
     bool capture = captured.getNameValue() != EMPTY;
     moveList.createMove(start, end, enPassantPos, enPassantColor, specialMove, capture, promoTo, captured, MATE, movedStore, CHECK);
 }
+
+
 
 bool Board::inBounds(short int row, short int col) {
     return ((row >= 0) && (row < BOARDSIZE) && (col >= 0) && (col < BOARDSIZE));
