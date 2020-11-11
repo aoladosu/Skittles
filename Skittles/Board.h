@@ -49,6 +49,7 @@ private:
     MoveList moveList;                                  // store moves played
     bool movedStore;                                    // whether piece moved before
     short int promoTo;                                  // piece promoted to
+    short int startPos;                                 // starting position of piece
     ChessPiece captured;                                // piece that is captured by move
 
     ChessPiece movedPiece;

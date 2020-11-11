@@ -25,5 +25,7 @@ public:
     bool isStart();
     bool isEnd();
     void clear();
+    void setEnd();
+    void addPromo(short int promo);
 };
 

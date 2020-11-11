@@ -70,6 +70,14 @@ void MoveList::clear(){
     isEmpty = true;
 }
 
+void MoveList::setEnd(){
+    end = current;
+}
+
+void MoveList::addPromo(short int promo){
+    cirQueue[current].promoTo = promo;
+}
+
 MoveList::~MoveList(){
     delete[] cirQueue;
 }

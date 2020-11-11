@@ -62,12 +62,21 @@ private:
     const short int WHITE = 0;
     const short int BLACK = 1;
 
+    // promotion variables
+    short int promotionColor;
+    short int promotionPos;
+    bool promotionOpen;
+    short int promotionStart;
+
+    // undo redo variables
+    short int oldSpecial= -1;
+
     // private functions
     void buttonStartup();
     void setImages();
     void createButton( QSizePolicy sizePolicy, short int id, short int row, short int col);
     void restoreButtonColor(QPushButton *btn, short int id);
-    void handleMove(QPushButton *btn1, QPushButton *btn2, short int special, short int start, short int end);
+    void handleMove(QPushButton *btn1, QPushButton *btn2, short int special, short int start, short int end, short int color);
     void handleUndoMove(short int start, short int end, short int special, short int capturedPiece, short int color);
     void enPassant(short int clickOne, short int clickTwo);
     void castle(short int castleType);
@@ -82,6 +91,7 @@ private slots:
     void buttonPressed(int id);
     void undoMove();
     void redoMove();
+    void promotion(int id);
 
 
 };

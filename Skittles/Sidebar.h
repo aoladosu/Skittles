@@ -7,6 +7,8 @@
 #include <QLabel>
 #include <QPushButton>
 #include <QListWidget>
+#include <QButtonGroup>
+#include <QIcon>
 
 class Sidebar : public QWidget
 {
@@ -17,21 +19,31 @@ private:
     // variables for layouts in sidebar
     QGridLayout *gridLayout;
     QLabel *title;
-    QHBoxLayout *result;
+    QGridLayout *result;
     QListWidget *moveList;
     QHBoxLayout *bottom;
     QPushButton *back;
     QPushButton *forward;
     short int moveNum = 0;
 
+    // buttons for promotion
+    QPushButton *queen;
+    QPushButton *knight;
+    QPushButton *bishop;
+    QPushButton *rook;
+    QButtonGroup btnGroup;
+
 public:
     explicit Sidebar(QWidget *parent = nullptr);
     ~Sidebar();
     QPushButton* getBackButton();
     QPushButton* getForwardButton();
+    QButtonGroup* getPromotionBtnGroup();
     void addMove(short int piece, short int start, short int end, short int color, bool capture, bool check, bool checkmate, short int special, short int promoPiece);
     void clearMovelist();
     void removeMove(short int color);
+    void showPromotion(QIcon queenIcon, QIcon knightIcon, QIcon bishopIcon, QIcon rookIcon);
+    void removePromotion();
 
 
 signals:

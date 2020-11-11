@@ -2,7 +2,6 @@
 #include <QListView>
 #include <QSizePolicy>
 #include <QString>
-#include <QIcon>
 #include "Sidebar.h"
 
 
@@ -17,6 +16,20 @@ Sidebar::Sidebar(QWidget *parent) : QWidget(parent)
     sizePolicy.setHorizontalPolicy(QSizePolicy::Minimum);
     sizePolicy.setVerticalPolicy(QSizePolicy::Minimum);
 
+    // create promotion buttons
+    queen = new QPushButton("Queen", this);
+    queen->setSizePolicy(sizePolicy);
+    knight = new QPushButton("Knight", this);
+    knight->setSizePolicy(sizePolicy);
+    bishop = new QPushButton("Bishop", this);
+    bishop->setSizePolicy(sizePolicy);
+    rook = new QPushButton("Rook", this);
+    rook->setSizePolicy(sizePolicy);
+    btnGroup.addButton(queen, 5);
+    btnGroup.addButton(knight, 3);
+    btnGroup.addButton(bishop, 4);
+    btnGroup.addButton(rook, 2);
+
     // create layout elements
     title = new QLabel(QString("Skittles"), this);
 
@@ -28,7 +41,7 @@ Sidebar::Sidebar(QWidget *parent) : QWidget(parent)
     moveList->setSizeAdjustPolicy(QAbstractScrollArea::AdjustToContents);
     moveList->setSizePolicy(sizePolicy);
 
-    result = new QHBoxLayout(this);
+    result = new QGridLayout(this);
 
     bottom = new QHBoxLayout(this);
     QIcon backIcon = QIcon(":/buttonImages/back_arrow");
@@ -233,12 +246,42 @@ void Sidebar::clearMovelist(){
 
 }
 
+void Sidebar::showPromotion(QIcon queenIcon, QIcon knightIcon, QIcon bishopIcon, QIcon rookIcon){
+    // add promotion options to sidebar
+
+
+    queen->setIcon(queenIcon);
+    knight->setIcon(knightIcon);
+    bishop->setIcon(bishopIcon);
+    rook->setIcon(rookIcon);
+
+    result->addWidget(queen, 0, 0);
+    result->addWidget(knight, 0, 1);
+    result->addWidget(bishop, 1, 0);
+    result->addWidget(rook, 1, 1);
+}
+
+void Sidebar::removePromotion(){
+    // remove promotion options from sidebar
+
+    QLayout *result2 = (QLayout *) result;
+
+    result2->removeWidget(queen);
+    result2->removeWidget(knight);
+    result2->removeWidget(bishop);
+    result2->removeWidget(rook);
+}
+
 QPushButton* Sidebar::getBackButton(){
     return back;
 }
 
 QPushButton* Sidebar::getForwardButton(){
     return forward;
+}
+
+QButtonGroup* Sidebar::getPromotionBtnGroup(){
+    return &btnGroup;
 }
 
 Sidebar::~Sidebar(){

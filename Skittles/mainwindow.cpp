@@ -1,10 +1,9 @@
 #include "mainwindow.h"
-#include "ui_mainwindow.h"
+//#include "ui_mainwindow.h"
 #include <QLayout>
 #include <Qt>
 #include <QSizePolicy>
 
-#include <QDebug>
 
 MainWindow::MainWindow(QWidget *parent): QMainWindow(parent)
 {
@@ -13,21 +12,29 @@ MainWindow::MainWindow(QWidget *parent): QMainWindow(parent)
     window = new QWidget();
     layout = new QGridLayout(this);
 
+    // create buttons
     buttonStartup();
     setImages();
 
+    // add sidebar
     sidebar = new Sidebar(this);
     layout->addWidget(sidebar, 0, 8, 8, 2);
+    sidebar->showPromotion(blackBishopIcon, blackBishopIcon, blackBishopIcon, blackBishopIcon);
 
+    // connect signals and slots
     connect(&btnGroup, SIGNAL(idClicked(int)), this, SLOT(buttonPressed(int)));
     connect(sidebar->getBackButton(), SIGNAL(clicked()), this, SLOT(undoMove()));
     connect(sidebar->getForwardButton(), SIGNAL(clicked()), this, SLOT(redoMove()));
+    connect(sidebar->getPromotionBtnGroup(), SIGNAL(idClicked(int)), this, SLOT(promotion(int)));
+
+    // initialize engine
     engine.init();
 
     //show layout
     QLayout *layout2 = (QLayout*) layout;
     window->setLayout(layout2);
     window->show();
+    sidebar->removePromotion();
 
 }
 
@@ -65,14 +72,56 @@ void MainWindow::buttonPressed(int id){
     if (valid){
         // move was valid in chess engine, so move pieces
         special = engine.getSpecialMove();
-        handleMove(btn1, btn2, special, firstClick, secondClick);
         engine.moveStats(pieceMoved, color, capture, check, checkmate);
-        sidebar->addMove(pieceMoved, firstClick, secondClick, color, capture, check, checkmate, special, -1);
+        handleMove(btn1, btn2, special, firstClick, secondClick, color);
+        if (special != 1){
+            sidebar->addMove(pieceMoved, firstClick, secondClick, color, capture, check, checkmate, special, -1);
+        }
     }
 
     firstClick = -1;
     secondClick = -1;
 
+}
+
+void MainWindow::promotion(int id){
+    // promote piece
+
+    short int pieceMoved, color;
+    bool capture, check, checkmate;
+
+    if (engine.promote(id)){
+        if (promotionOpen) sidebar->removePromotion();
+        promotionOpen = false;
+        oldSpecial = -1;
+        engine.moveStats(pieceMoved, color, capture, check, checkmate);
+        sidebar->addMove(pieceMoved, promotionStart, promotionPos, color, capture, check, checkmate, 1, id);
+
+        QPushButton *btn = (QPushButton *) btnGroup.button(promotionPos);
+
+        switch(id){
+            case 2:
+                // rook
+                if (promotionColor == 1) btn->setIcon(blackRookIcon);
+                else btn->setIcon(whiteRookIcon);
+                break;
+            case 3:
+                // knight
+                if (promotionColor == 1) btn->setIcon(blackKnightIcon);
+                else btn->setIcon(whiteKnightIcon);
+                break;
+            case 4:
+                // bishop
+                if (promotionColor == 1) btn->setIcon(blackBishopIcon);
+                else btn->setIcon(whiteBishopIcon);
+                break;
+            case 5:
+                // queen
+                if (promotionColor == 1) btn->setIcon(blackQueenIcon);
+                else btn->setIcon(whiteQueenIcon);
+                break;
+        }
+    }
 }
 
 void MainWindow::undoMove(){
@@ -81,14 +130,6 @@ void MainWindow::undoMove(){
     // variables to get info back
     short int start, end, special, promoPiece, capturedPiece, color;
     engine.goBack(start, end, special, promoPiece, capturedPiece, color);
-
-    qDebug() << "undo stats...";
-    qDebug() << "start: " << start;
-    qDebug() << "end: " << end;
-    qDebug() << "special: " << special;
-    qDebug() << "promo: " << promoPiece;
-    qDebug() << "captured: " << capturedPiece;
-    qDebug() << "color: " << color;
 
     if (start == -1){
         // TODO: have a message that you can't go back, or grey out button, so need a new func
@@ -106,14 +147,6 @@ void MainWindow::redoMove(){
     short int start, end, special, promoPiece, capturedPiece, color;
     engine.goForward(start, end, special, promoPiece, capturedPiece, color);
 
-    qDebug() << "redo stats...";
-    qDebug() << "start: " << start;
-    qDebug() << "end: " << end;
-    qDebug() << "special: " << special;
-    qDebug() << "promo: " << promoPiece;
-    qDebug() << "captured: " << capturedPiece;
-    qDebug() << "color: " << color;
-
     if (start == -1){
         // TODO: have a message that you can't go forward, or grey out button, so need a new func
         return;
@@ -121,7 +154,11 @@ void MainWindow::redoMove(){
 
     QPushButton *btnStart = (QPushButton *) btnGroup.button(start);
     QPushButton *btnEnd = (QPushButton *) btnGroup.button(end);
-    handleMove(btnStart, btnEnd, special, start, end);
+    handleMove(btnStart, btnEnd, special, start, end, 1-color);
+    if (promotionOpen){
+        promotionOpen = false;
+        sidebar->removePromotion();
+    }
 
     short int pieceMoved;
     bool capture, check, checkmate;
@@ -129,9 +166,37 @@ void MainWindow::redoMove(){
     engine.moveStats(pieceMoved, color, capture, check, checkmate);
     sidebar->addMove(pieceMoved, start, end, color, capture, check, checkmate, special, promoPiece);
 
+    if (special == 1){
+        // promotion
+        QPushButton *btn = (QPushButton *) btnGroup.button(end);
+
+        switch(promoPiece){
+            case 2:
+                // rook
+                if (color == 1) btn->setIcon(blackRookIcon);
+                else btn->setIcon(whiteRookIcon);
+                break;
+            case 3:
+                // knight
+                if (color == 1) btn->setIcon(blackKnightIcon);
+                else btn->setIcon(whiteKnightIcon);
+                break;
+            case 4:
+                // bishop
+                if (color == 1) btn->setIcon(blackBishopIcon);
+                else btn->setIcon(whiteBishopIcon);
+                break;
+            case 5:
+                // queen
+                if (color == 1) btn->setIcon(blackQueenIcon);
+                else btn->setIcon(whiteQueenIcon);
+                break;
+        }
+    }
+
 }
 
-void MainWindow::handleMove(QPushButton *btn1, QPushButton *btn2, short int special, short int start, short int end){
+void MainWindow::handleMove(QPushButton *btn1, QPushButton *btn2, short int special, short int start, short int end, short int color){
     // move pieces and handle special cases
 
     btn2->setIcon(btn1->icon());
@@ -143,7 +208,12 @@ void MainWindow::handleMove(QPushButton *btn1, QPushButton *btn2, short int spec
             break;
         case 1:
             // promotion
-            // TODO: ask for promotion Promotion();
+            if (color == BLACK) sidebar->showPromotion(blackQueenIcon, blackKnightIcon, blackBishopIcon, blackRookIcon);
+            else sidebar->showPromotion(whiteQueenIcon, whiteKnightIcon, whiteBishopIcon, whiteRookIcon);
+            promotionOpen = true;
+            promotionPos = end;
+            promotionStart = start;
+            promotionColor = color;
             break;
         case 2:
             // enpassant

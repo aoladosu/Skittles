@@ -168,6 +168,7 @@ bool Board::validate(short int start, short int end)
         }
 
         // add move to movelist
+        startPos = start;
         addMove(start, end);
     }
 
@@ -823,6 +824,8 @@ void Board::goBack(short int &start, short int &end, short int &special, short i
     numToRowCol(start, end, startRow, endRow, startCol, endCol);
     board[startRow][startCol] = board[endRow][endCol];
     board[startRow][startCol].setMoved(move->moved);
+    movedPiece = board[startRow][startCol];
+    captured = ChessPiece();
 
     if (specialmv == ENPASSANT){
         if (board[startRow][startCol].getColor() == BLACK){
@@ -900,10 +903,13 @@ void Board::goForward(short int &start, short int &end, short int &special, shor
     CHECK = move->check;
     short int startRow, endRow, startCol, endCol;
     specialMove = move->specialMove;
+    if (specialMove == PROMOTION) specialMove = NOSPECIAL;
     numToRowCol(start, end, startRow, endRow, startCol, endCol);
     toPlay = BLACK + WHITE - board[startRow][startCol].getColor();
     color = toPlay;
     if (board[endRow][endCol].getNameValue() != EMPTY) numPieces--;
+    movedPiece = board[startRow][startCol];
+    captured = board[endRow][endCol];
     board[endRow][endCol] = board[startRow][startCol];
     board[startRow][startCol] = ChessPiece();
     board[endRow][endCol].setMoved(true);
@@ -971,6 +977,7 @@ bool Board::promote(short int pieceNameVal)
 
     if (specialMove == PROMOTION) {
 
+        moveList.setEnd();
         ChessPiece piece;
         bool valid = true;
         short int queenVal = 90, knightVal = 30, rookVal = 50, bishopVal = 30, color = BLACK;
@@ -1005,8 +1012,9 @@ bool Board::promote(short int pieceNameVal)
             board[promotionPos[0]][promotionPos[1]] = piece;
             specialMove = NOSPECIAL;
             promoTo = pieceNameVal;
+            moveList.addPromo(promoTo);
+            promoTo = -1;
         }
-
         return valid;
     }
 
