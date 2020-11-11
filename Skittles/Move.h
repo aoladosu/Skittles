@@ -9,6 +9,7 @@ private:
     Move *next = nullptr;
 
 public:
+    Move();
     Move(short int startPos, short int endPos, short int passantArray[2], short int passantColor, short int special, bool capture, short int promo, ChessPiece caturedPiece, bool mate, short int moved);
     short int start;                      // where the piece started this move
     short int end;                        // where the piece ended this move

@@ -1,15 +1,19 @@
 #pragma once
 #include "Move.h"
 
+// move list is implemented as a circular queue
+
 class MoveList
 {
 private:
 
-    // manage linked list
-    Move *start = nullptr;
-    Move *current = nullptr;
-    Move *end = nullptr;
-    short int numMoves = 0;
+    // variables
+    Move *cirQueue = nullptr;
+    short int maxSize = 20;
+    short int current = 0;
+    short int start = 0;
+    short int end = 0;
+    bool isEmpty = true;
 
 public:
 
@@ -18,12 +22,8 @@ public:
     void createMove(short int startPos, short int endPos, short int passantArray[2], short int passantColor, short int special, bool capture, short int promoTo, ChessPiece capturedPiece, bool mate, short int moved);
     Move* getPrevious();
     Move* getNext();
-    Move* getCurrent();
-    short int getNumMoves();
     bool isStart();
     bool isEnd();
-    bool isEmpty();
     void clear();
-    void remove(Move *curr);
 };
 
