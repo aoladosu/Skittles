@@ -28,11 +28,12 @@ private:
 
     // board state
     bool MATE = false;									// endgame conditions
-    bool CHECK = false;
+    bool CHECK = false;                                 // a king in check
+    bool DRAW = false;                                  // game is drawn
+    bool INSUFFMAT = false;                             // insfuffienct material
+    bool STALEMATE = false;                             // stalemate
     short int toPlay = WHITE;							// what side is playing
     short int bkPos[2] = {0, 4}, wkPos[2] = {7, 4};		// king positions
-    short int numPieces = 32;
-    short int numPiecesOld = 32;
 
     // special moves
     const short int NOSPECIAL = 0;
@@ -67,6 +68,7 @@ public:
     short int getSpecial();
     bool gameOver();
     short int getWinner();
+    short int getWinReason();
     bool promote(short int pieceNameVal);
     void goBack(short int &start, short int &end, short int &special, short int &promoPiece, short int &capturedPiece, short int &color);
     void goForward(short int &start, short int &end, short int &special, short int &promoPiece, short int &capturedPiece, short int &color);
@@ -83,6 +85,14 @@ private:
     void movePiece(short int startRow, short int endRow, short int startCol, short int endCol);
     bool isChecked(short int row, short int col, ChessPiece cboard[8][8], short int color, short int rowList[], short int colList[], bool storeCheck=false);
     bool isMate(short int row, short int col, ChessPiece cboard[8][8], short int rowList[], short int colList[]);
+    bool isDraw();
+    bool isStalemate(short int pieces[]);
+    bool genKingMoves(short int row, short int col, short int moves[]);
+    bool genKnightMoves(short int row, short int col, short int moves[]);
+    bool genBishopMoves(short int row, short int col, short int moves[]);
+    bool genRookMoves(short int row, short int col, short int moves[]);
+    bool genQueenMoves(short int row, short int col, short int moves[]);
+    bool genPawnMoves(short int row, short int col, short int moves[]);
     bool isPawnLos(short int row, short int col, ChessPiece cboard[8][8], short int color);
     bool numToRowCol(short int start, short int end, short int &startRow, short int &endRow, short int &startCol, short int &endcol);
     short int rowColToNum(short int row, short int col);
