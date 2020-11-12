@@ -31,6 +31,8 @@ MainWindow::MainWindow(QWidget *parent): QMainWindow(parent)
     connect(sidebar->getPromotionBtnGroup(), SIGNAL(idClicked(int)), this, SLOT(promotion(int)));
     connect(sidebar->getGameOverButton(), SIGNAL(clicked()), this, SLOT(newGame()));
 
+    addLabels();
+
     // initialize engine
     engine.init();
 
@@ -172,6 +174,7 @@ void MainWindow::undoMove(){
     // check if forward and back buttons should be greyed out
     handleUndoMove(start, end, special, capturedPiece, color);
     sidebar->removeMove(color);
+    sidebar->hideGameOver();
     if (engine.isStart()) sidebar->getBackButton()->setEnabled(false);
     sidebar->getForwardButton()->setEnabled(true);
 }
@@ -626,6 +629,38 @@ void MainWindow::restoreButtonColor(QPushButton *btn, short int id){
         pal.setColor(QPalette::Button, darkerColor);
     }
     btn->setPalette(pal);
+}
+
+void MainWindow::addLabels(){
+    // add labels to board
+
+    // size policy for buttons
+    QSizePolicy sPolicy = QSizePolicy();
+    sPolicy.setHorizontalPolicy(QSizePolicy::Minimum);
+    sPolicy.setVerticalPolicy(QSizePolicy::Minimum);
+
+    // create labels
+    QString letters = QString("bcdefgh");
+    QString numbers = QString("2345678");
+
+    for (short int i=0; i<7; i++){
+        insertLabels(sPolicy, letters.at(i), 7, i+1);
+        insertLabels(sPolicy, numbers.at(i), 6-i, 0);
+    }
+
+    insertLabels(sPolicy, QString("a1"), 7, 0);
+
+}
+
+void MainWindow::insertLabels(QSizePolicy sPolicy, QString text, short int row, short int col){
+
+    QLabel *label = new QLabel(QString(" ") + text, this);
+    QPalette pal = label->palette();
+    pal.setColor(QPalette::WindowText, QColor(202,44,106));
+    label->setPalette(pal);
+    label->setSizePolicy(sPolicy);
+    label->setAttribute(Qt::WA_TransparentForMouseEvents);
+    layout->addWidget(label, row, col);
 }
 
 MainWindow::~MainWindow()

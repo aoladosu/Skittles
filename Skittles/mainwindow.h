@@ -80,7 +80,8 @@ private:
     void handleUndoMove(short int start, short int end, short int special, short int capturedPiece, short int color);
     void enPassant(short int clickOne, short int clickTwo);
     void castle(short int castleType);
-
+    void addLabels();
+    void insertLabels(QSizePolicy sizePolicy, QString text, short int row, short int col);
 
 public:
     MainWindow(QWidget *parent = nullptr);

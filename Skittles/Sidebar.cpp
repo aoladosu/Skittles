@@ -12,19 +12,19 @@ Sidebar::Sidebar(QWidget *parent) : QWidget(parent)
     gridLayout = new QGridLayout(this);
 
     // size policy for buttons
-    QSizePolicy sizePolicy = QSizePolicy();
-    sizePolicy.setHorizontalPolicy(QSizePolicy::Minimum);
-    sizePolicy.setVerticalPolicy(QSizePolicy::Minimum);
+    QSizePolicy sPolicy = QSizePolicy();
+    sPolicy.setHorizontalPolicy(QSizePolicy::Minimum);
+    sPolicy.setVerticalPolicy(QSizePolicy::Minimum);
 
     // create promotion buttons
     queen = new QPushButton("Queen", this);
-    queen->setSizePolicy(sizePolicy);
+    queen->setSizePolicy(sPolicy);
     knight = new QPushButton("Knight", this);
-    knight->setSizePolicy(sizePolicy);
+    knight->setSizePolicy(sPolicy);
     bishop = new QPushButton("Bishop", this);
-    bishop->setSizePolicy(sizePolicy);
+    bishop->setSizePolicy(sPolicy);
     rook = new QPushButton("Rook", this);
-    rook->setSizePolicy(sizePolicy);
+    rook->setSizePolicy(sPolicy);
     btnGroup.addButton(queen, 5);
     btnGroup.addButton(knight, 3);
     btnGroup.addButton(bishop, 4);
@@ -32,7 +32,7 @@ Sidebar::Sidebar(QWidget *parent) : QWidget(parent)
 
     // create game over button
     gameOverBtn = new QPushButton(this);
-    gameOverBtn->setSizePolicy(sizePolicy);
+    gameOverBtn->setSizePolicy(sPolicy);
 
     // create layout elements
     title = new QLabel(QString("Skittles"), this);
@@ -43,7 +43,7 @@ Sidebar::Sidebar(QWidget *parent) : QWidget(parent)
     moveList->setUniformItemSizes(true);
     moveList->setAlternatingRowColors(true);
     moveList->setSizeAdjustPolicy(QAbstractScrollArea::AdjustToContents);
-    moveList->setSizePolicy(sizePolicy);
+    moveList->setSizePolicy(sPolicy);
 
     result = new QGridLayout(this);
     result->addWidget(gameOverBtn);
