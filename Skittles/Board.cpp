@@ -1406,7 +1406,7 @@ bool Board::gameOver()
 
 short int Board::getWinner() {
     // returns -1 if the game is not over/draw, or the color of the player who won
-    if (MATE) return toPlay;
+    if (MATE) return 1 - toPlay;
     return -1;
 }
 
