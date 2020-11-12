@@ -151,6 +151,8 @@ void MainWindow::newGame(){
     setImages();
     sidebar->clearMovelist();
     sidebar->hideGameOver();
+    sidebar->getBackButton()->setEnabled(false);
+    sidebar->getForwardButton()->setEnabled(false);
     for (short int i=0; i<BOARDSIZE*BOARDSIZE; i++){
         btn = (QPushButton *) btnGroup.button(i);
         restoreButtonColor(btn, i);

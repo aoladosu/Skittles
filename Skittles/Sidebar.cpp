@@ -281,6 +281,7 @@ void Sidebar::hidePromotion(){
 
 void Sidebar::showGameOver(short int winner, short int reason){
 
+    gameOverBtn->show();
     if (winner == 1){
         gameOverBtn->setText("Black Wins!\n\n0 - 1\n(Click for new game)");
     }
@@ -301,6 +302,7 @@ void Sidebar::hideGameOver(){
 
     QLayout *result2 = (QLayout *) result;
     result2->removeWidget(gameOverBtn);
+    gameOverBtn->hide();
 }
 
 QPushButton* Sidebar::getBackButton(){
