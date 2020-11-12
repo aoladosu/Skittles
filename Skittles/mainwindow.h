@@ -92,6 +92,7 @@ private slots:
     void undoMove();
     void redoMove();
     void promotion(int id);
+    void newGame();
 
 
 };

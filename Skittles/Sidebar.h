@@ -31,6 +31,7 @@ private:
     QPushButton *knight;
     QPushButton *bishop;
     QPushButton *rook;
+    QPushButton *gameOverBtn;
     QButtonGroup btnGroup;
 
 public:
@@ -39,11 +40,14 @@ public:
     QPushButton* getBackButton();
     QPushButton* getForwardButton();
     QButtonGroup* getPromotionBtnGroup();
+    QPushButton* getGameOverButton();
     void addMove(short int piece, short int start, short int end, short int color, bool capture, bool check, bool checkmate, short int special, short int promoPiece);
     void clearMovelist();
     void removeMove(short int color);
     void showPromotion(QIcon queenIcon, QIcon knightIcon, QIcon bishopIcon, QIcon rookIcon);
-    void removePromotion();
+    void hidePromotion();
+    void showGameOver(short int winner, short int reason);
+    void hideGameOver();
 
 
 signals:

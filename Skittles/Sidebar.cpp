@@ -30,6 +30,10 @@ Sidebar::Sidebar(QWidget *parent) : QWidget(parent)
     btnGroup.addButton(bishop, 4);
     btnGroup.addButton(rook, 2);
 
+    // create game over button
+    gameOverBtn = new QPushButton(this);
+    gameOverBtn->setSizePolicy(sizePolicy);
+
     // create layout elements
     title = new QLabel(QString("Skittles"), this);
 
@@ -42,6 +46,7 @@ Sidebar::Sidebar(QWidget *parent) : QWidget(parent)
     moveList->setSizePolicy(sizePolicy);
 
     result = new QGridLayout(this);
+    result->addWidget(gameOverBtn);
 
     bottom = new QHBoxLayout(this);
     QIcon backIcon = QIcon(":/buttonImages/back_arrow");
@@ -63,6 +68,7 @@ Sidebar::Sidebar(QWidget *parent) : QWidget(parent)
     gridLayout2->setContentsMargins(10,10,10,10);
     this->setLayout((QLayout *) gridLayout);
     this->show();
+    hideGameOver();
 
 }
 
@@ -243,6 +249,7 @@ void Sidebar::clearMovelist(){
     // clear movelist
 
     moveList->clear();
+    moveNum = 0;
 
 }
 
@@ -261,7 +268,7 @@ void Sidebar::showPromotion(QIcon queenIcon, QIcon knightIcon, QIcon bishopIcon,
     result->addWidget(rook, 1, 1);
 }
 
-void Sidebar::removePromotion(){
+void Sidebar::hidePromotion(){
     // remove promotion options from sidebar
 
     QLayout *result2 = (QLayout *) result;
@@ -270,6 +277,30 @@ void Sidebar::removePromotion(){
     result2->removeWidget(knight);
     result2->removeWidget(bishop);
     result2->removeWidget(rook);
+}
+
+void Sidebar::showGameOver(short int winner, short int reason){
+
+    if (winner == 1){
+        gameOverBtn->setText("Black Wins!\n\n0 - 1\n(Click for new game)");
+    }
+    else if (winner == 0){
+        gameOverBtn->setText("White Wins!\n\n1 - 0\n(Click for new game)");
+    }
+    else if (reason == 1){
+        gameOverBtn->setText("Draw - Stalemate!\n\n1/2 - 1/2\n(Click for new game)");
+    }
+    else{
+        gameOverBtn->setText("Draw - Insufficient Material!\n\n1/2 - 1/2\n(Click for new game)");
+    }
+
+    result->addWidget(gameOverBtn, 0, 0);
+}
+
+void Sidebar::hideGameOver(){
+
+    QLayout *result2 = (QLayout *) result;
+    result2->removeWidget(gameOverBtn);
 }
 
 QPushButton* Sidebar::getBackButton(){
@@ -284,8 +315,13 @@ QButtonGroup* Sidebar::getPromotionBtnGroup(){
     return &btnGroup;
 }
 
+QPushButton* Sidebar::getGameOverButton(){
+    return gameOverBtn;
+}
+
 Sidebar::~Sidebar(){
     delete title;
+    delete gameOverBtn;
     delete bottom;
     delete back;
     delete forward;

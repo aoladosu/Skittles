@@ -1331,7 +1331,12 @@ bool Board::promote(short int pieceNameVal)
             board[promotionPos[0]][promotionPos[1]] = piece;
             specialMove = NOSPECIAL;
             promoTo = pieceNameVal;
-            moveList.addPromo(promoTo);
+            short int rowList[16], colList[16];
+            short int *pos = (color == BLACK) ? wkPos : bkPos;
+            if (isChecked(pos[0], pos[1], board, 1-color, rowList, colList, true)){
+                isMate(pos[0], pos[1], board, rowList, colList);
+            }
+            moveList.addPromo(promoTo, CHECK, MATE);
             promoTo = -1;
         }
         return valid;
@@ -1408,8 +1413,16 @@ short int Board::getWinner() {
 short int Board::getWinReason(){
     if (MATE) return 0;
     if (STALEMATE) return 1;
-    if (INSUFFMAT) return 3;
-    return 4;
+    if (INSUFFMAT) return 2;
+    return 3;
+}
+
+bool Board::isStart(){
+    return moveList.isStart();
+}
+
+bool Board::isEnd(){
+    return moveList.isEnd();
 }
 
 bool Board::areEqual(short int arr1[2], short int arr2[2]){

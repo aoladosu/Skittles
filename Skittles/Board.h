@@ -69,6 +69,8 @@ public:
     bool gameOver();
     short int getWinner();
     short int getWinReason();
+    bool isStart();
+    bool isEnd();
     bool promote(short int pieceNameVal);
     void goBack(short int &start, short int &end, short int &special, short int &promoPiece, short int &capturedPiece, short int &color);
     void goForward(short int &start, short int &end, short int &special, short int &promoPiece, short int &capturedPiece, short int &color);

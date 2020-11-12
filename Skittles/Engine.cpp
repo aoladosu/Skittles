@@ -33,6 +33,18 @@ short int Engine::getWinner()
     return board.getWinner();
 }
 
+short int Engine::getWinReason(){
+    return board.getWinReason();
+}
+
+bool Engine::isStart(){
+    return board.isStart();
+}
+
+bool Engine::isEnd(){
+    return board.isEnd();
+}
+
 void Engine::goBack(short int &start, short int &end, short int &special, short int &promoPiece, short int &capturedPiece, short int &color){
     board.goBack(start, end, special, promoPiece, capturedPiece, color);
 }

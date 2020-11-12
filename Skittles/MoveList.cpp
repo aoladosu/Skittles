@@ -74,8 +74,10 @@ void MoveList::setEnd(){
     end = current;
 }
 
-void MoveList::addPromo(short int promo){
+void MoveList::addPromo(short int promo, short int CHECK, short int MATE){
     cirQueue[current].promoTo = promo;
+    cirQueue[current].check = CHECK;
+    cirQueue[current].mate = MATE;
 }
 
 MoveList::~MoveList(){

@@ -9,7 +9,7 @@ private:
 
     // variables
     Move *cirQueue = nullptr;
-    short int maxSize = 20;
+    short int maxSize = 15;
     short int current = 0;
     short int start = 0;
     short int end = 0;
@@ -26,6 +26,6 @@ public:
     bool isEnd();
     void clear();
     void setEnd();
-    void addPromo(short int promo);
+    void addPromo(short int promo, short int CHECK, short int MATE);
 };
 

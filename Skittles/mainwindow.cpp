@@ -21,10 +21,15 @@ MainWindow::MainWindow(QWidget *parent): QMainWindow(parent)
     sidebar->showPromotion(blackBishopIcon, blackBishopIcon, blackBishopIcon, blackBishopIcon);
 
     // connect signals and slots
+    QPushButton *back = sidebar->getBackButton();
+    QPushButton *forward = sidebar->getForwardButton();
+    back->setEnabled(false);
+    forward->setEnabled(false);
     connect(&btnGroup, SIGNAL(idClicked(int)), this, SLOT(buttonPressed(int)));
-    connect(sidebar->getBackButton(), SIGNAL(clicked()), this, SLOT(undoMove()));
-    connect(sidebar->getForwardButton(), SIGNAL(clicked()), this, SLOT(redoMove()));
+    connect(back, SIGNAL(clicked()), this, SLOT(undoMove()));
+    connect(forward, SIGNAL(clicked()), this, SLOT(redoMove()));
     connect(sidebar->getPromotionBtnGroup(), SIGNAL(idClicked(int)), this, SLOT(promotion(int)));
+    connect(sidebar->getGameOverButton(), SIGNAL(clicked()), this, SLOT(newGame()));
 
     // initialize engine
     engine.init();
@@ -33,7 +38,7 @@ MainWindow::MainWindow(QWidget *parent): QMainWindow(parent)
     QLayout *layout2 = (QLayout*) layout;
     window->setLayout(layout2);
     window->show();
-    sidebar->removePromotion();
+    sidebar->hidePromotion();
 
 }
 
@@ -67,6 +72,8 @@ void MainWindow::buttonPressed(int id){
     QPushButton *btn1 = (QPushButton *) btnGroup.button(firstClick);
     bool valid = engine.validate(firstClick, secondClick);
     restoreButtonColor(btn1, firstClick);
+    short int winner, reason;
+
 
     if (valid){
         // move was valid in chess engine, so move pieces
@@ -76,6 +83,13 @@ void MainWindow::buttonPressed(int id){
         if (special != 1){
             sidebar->addMove(pieceMoved, firstClick, secondClick, color, capture, check, checkmate, special, -1);
         }
+        if (engine.gameOver()){
+            winner = engine.getWinner();
+            reason = engine.getWinReason();
+            sidebar->showGameOver(winner, reason);
+        }
+        sidebar->getBackButton()->setEnabled(true);
+        sidebar->getForwardButton()->setEnabled(false);
     }
 
     firstClick = -1;
@@ -86,11 +100,11 @@ void MainWindow::buttonPressed(int id){
 void MainWindow::promotion(int id){
     // promote piece
 
-    short int pieceMoved, color;
+    short int pieceMoved, color, winner, reason;
     bool capture, check, checkmate;
 
     if (engine.promote(id)){
-        if (promotionOpen) sidebar->removePromotion();
+        if (promotionOpen) sidebar->hidePromotion();
         promotionOpen = false;
         oldSpecial = -1;
         engine.moveStats(pieceMoved, color, capture, check, checkmate);
@@ -120,6 +134,26 @@ void MainWindow::promotion(int id){
                 else btn->setIcon(whiteQueenIcon);
                 break;
         }
+        if (engine.gameOver()){
+            winner = engine.getWinner();
+            reason = engine.getWinReason();
+            sidebar->showGameOver(winner, reason);
+        }
+    }
+}
+
+void MainWindow::newGame(){
+    // start a new game
+
+
+    QPushButton *btn;
+    engine.init();
+    setImages();
+    sidebar->clearMovelist();
+    sidebar->hideGameOver();
+    for (short int i=0; i<BOARDSIZE*BOARDSIZE; i++){
+        btn = (QPushButton *) btnGroup.button(i);
+        restoreButtonColor(btn, i);
     }
 }
 
@@ -130,13 +164,14 @@ void MainWindow::undoMove(){
     short int start, end, special, promoPiece, capturedPiece, color;
     engine.goBack(start, end, special, promoPiece, capturedPiece, color);
 
-    if (start == -1){
-        // TODO: have a message that you can't go back, or grey out button, so need a new func
-        return;
-    }
+    // nothing to go back to
+    if (start == -1) return;
 
+    // check if forward and back buttons should be greyed out
     handleUndoMove(start, end, special, capturedPiece, color);
     sidebar->removeMove(color);
+    if (engine.isStart()) sidebar->getBackButton()->setEnabled(false);
+    sidebar->getForwardButton()->setEnabled(true);
 }
 
 void MainWindow::redoMove(){
@@ -156,10 +191,10 @@ void MainWindow::redoMove(){
     handleMove(btnStart, btnEnd, special, start, end, 1-color);
     if (promotionOpen){
         promotionOpen = false;
-        sidebar->removePromotion();
+        sidebar->hidePromotion();
     }
 
-    short int pieceMoved;
+    short int pieceMoved, winner, reason;
     bool capture, check, checkmate;
 
     engine.moveStats(pieceMoved, color, capture, check, checkmate);
@@ -192,6 +227,17 @@ void MainWindow::redoMove(){
                 break;
         }
     }
+
+    // check if this move was a game over move
+    if (engine.gameOver()){
+        winner = engine.getWinner();
+        reason = engine.getWinReason();
+        sidebar->showGameOver(winner, reason);
+    }
+
+    // check if forward and back buttons should be greyed out
+    if (engine.isEnd()) sidebar->getForwardButton()->setEnabled(false);
+    sidebar->getBackButton()->setEnabled(true);
 
 }
 
