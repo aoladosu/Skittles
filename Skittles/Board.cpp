@@ -1,6 +1,8 @@
 #include "Board.h"
 #include <QtMath>
 
+#include <QDebug>
+
 Board::Board(){}
 Board::~Board(){}
 
@@ -105,7 +107,7 @@ bool Board::validate(short int start, short int end)
 
     if (valid) {
 
-        if (isLeftInCheck(startRow, endRow, startCol, endCol, false)) return false;
+        if (isLeftInCheck(startRow, endRow, startCol, endCol, toPlay, false)) return false;
 
         // check if opposite king is in checkmate
         if (isChecked(othKing[0], othKing[1], board, oppColor, rowList, colList, true)) {
@@ -416,11 +418,11 @@ void Board::movePiece(short int startRow, short int endRow, short int startCol, 
     return;
 }
 
-bool Board::isLeftInCheck(short int startRow, short int endRow, short int startCol, short int endCol, bool undo){
+bool Board::isLeftInCheck(short int startRow, short int endRow, short int startCol, short int endCol, short int color, bool undo){
     // check if moving a piece leaves the king in check
 
     ChessPiece startPiece, endPiece, behindPiece;
-    bool moved, valid=false;
+    bool moved, inCheck=false;
     short int kingRow, kingCol, *currKing, *othKing, rowList[16], colList[16];
 
     // store past state of board
@@ -438,7 +440,7 @@ bool Board::isLeftInCheck(short int startRow, short int endRow, short int startC
     movePiece(startRow, endRow, startCol, endCol);
 
     // get king's position, might have changed if the king was moved
-    if (toPlay == BLACK) {
+    if (color == BLACK) {
         currKing = bkPos;
         othKing = wkPos;
     }
@@ -456,9 +458,9 @@ bool Board::isLeftInCheck(short int startRow, short int endRow, short int startC
     }
 
     // check if move causes this king to be in check
-    if (isChecked(kingRow, kingCol, board, toPlay, rowList, colList)) {
+    if (isChecked(kingRow, kingCol, board, color, rowList, colList)) {
         undo = true;
-        valid = true;
+        inCheck = true;
     }
 
     if (undo){
@@ -478,7 +480,7 @@ bool Board::isLeftInCheck(short int startRow, short int endRow, short int startC
         movedStore = movedPieceOld.getMoved();
     }
 
-    return valid;
+    return inCheck;
 
 }
 
@@ -836,7 +838,7 @@ bool Board::isDraw(){
             p2 = board[row][col].getNameValue() == KNIGHT;
             numToRowCol(wPieces[2], 0, row, col, row1, col1);
             p3 = board[row][col].getNameValue() == KNIGHT;
-            wInsuff = (p1 + p2 + p3 == 2);
+            wInsuff = ((p1 + p2 + p3) == 2);
         }
 
         if (bInsuff && wInsuff){
@@ -849,9 +851,9 @@ bool Board::isDraw(){
     // check for stalemate
     bPieces[bIndex++] = -1;
     wPieces[wIndex++] = -1;
-    if (toPlay == BLACK) STALEMATE = isStalemate(bPieces);
-    else STALEMATE = isStalemate(wPieces);
-    return STALEMATE;
+    //if (toPlay == BLACK) STALEMATE = isStalemate(bPieces);
+    //else STALEMATE = isStalemate(wPieces);
+    return INSUFFMAT;
 
 }
 
@@ -896,13 +898,15 @@ bool Board::genKingMoves(short int row, short int col, short int moves[]){
     if (board[row][col].getNameValue() != KING) return false;
     short int special = specialMove, index=0;
     ChessPiece piece = board[row][col];
-
+    short int color = piece.getColor();
 
     // check surrounding eightpositions
     for (short int i = row -1; i < row+2; i++){
         for (short int j= col -1; j < col+2; j++){
             if(inBounds(i,j)){
-                if (kingMoveValid(piece, row, i, col, j) && !isLeftInCheck(row, i, col, j, true)) moves[index++] = rowColToNum(i,j);
+                if (kingMoveValid(piece, row, i, col, j) && !isLeftInCheck(row, i, col, j, color, true)){
+                    moves[index++] = rowColToNum(i,j);
+                }
             }
         }
     }
@@ -910,14 +914,12 @@ bool Board::genKingMoves(short int row, short int col, short int moves[]){
 
     // check castling to right
     if(inBounds(row,col+2)){
-        piece = board[row][col+2];
-        if (kingMoveValid(piece, row, row, col, col+2) && !isLeftInCheck(row, row, col, col+2, true)) moves[index++] = rowColToNum(row,col+2);
+        if (kingMoveValid(piece, row, row, col, col+2) && !isLeftInCheck(row, row, col, col+2, color, true)) moves[index++] = rowColToNum(row,col+2);
     }
 
     // check castling to left
     if(inBounds(row,col-2)){
-        piece = board[row][col-2];
-        if (kingMoveValid(piece, row, row, col, col-2) && !isLeftInCheck(row, row, col, col-2, true)) moves[index++] = rowColToNum(row,col-2);
+        if (kingMoveValid(piece, row, row, col, col-2) && !isLeftInCheck(row, row, col, col-2, color, true)) moves[index++] = rowColToNum(row,col-2);
     }
 
     moves[index] = -1;
@@ -932,6 +934,7 @@ bool Board::genKnightMoves(short int row, short int col, short int moves[]){
     if (board[row][col].getNameValue() != KNIGHT) return false;
     short int special = specialMove, index=0;
     ChessPiece piece = board[row][col];
+    short int color = piece.getColor();
 
     // knight moves
     short int krowPos[8] = { static_cast<short>(row - 2), static_cast<short>(row - 1), static_cast<short>(row + 1), static_cast<short>(row + 2), static_cast<short>(row + 2), static_cast<short>(row + 1), static_cast<short>(row - 1), static_cast<short>(row - 2) };
@@ -940,7 +943,7 @@ bool Board::genKnightMoves(short int row, short int col, short int moves[]){
     // check if knight is moves valid
     for (short int i=0; i<BOARDSIZE; i++){
         if (inBounds(krowPos[i], kcolPos[i]) == false) continue;
-        if (knightMoveValid(piece, row, krowPos[i], col, kcolPos[i]) && !isLeftInCheck(row, krowPos[i], col, kcolPos[i], true)) moves[index++] = rowColToNum(krowPos[i],kcolPos[i]);
+        if (knightMoveValid(piece, row, krowPos[i], col, kcolPos[i]) && !isLeftInCheck(row, krowPos[i], col, kcolPos[i], color, true)) moves[index++] = rowColToNum(krowPos[i],kcolPos[i]);
     }
 
     moves[index] = -1;
@@ -954,29 +957,30 @@ bool Board::genBishopMoves(short int row, short int col, short int moves[]){
     if ((board[row][col].getNameValue() != BISHOP) && (board[row][col].getNameValue() != QUEEN)) return false;
     short int special = specialMove, index=0;
     ChessPiece piece = board[row][col];
+    short int color = piece.getColor();
 
     // check up left direction
     for (short int i=row-1, j=col-1; inBounds(i, j); i-=1, j-=1){
-        piece = board[i][j];
-        if (bishopMoveValid(piece, row, i, col, j) && !isLeftInCheck(row, i, col, j, true)) moves[index++] = rowColToNum(i,j);
+        if (bishopMoveValid(piece, row, i, col, j) && !isLeftInCheck(row, i, col, j, color, true)) moves[index++] = rowColToNum(i,j);
+        else break;
     }
 
     // check up right direction
     for (short int i=row-1, j=col+1; inBounds(i, j); i-=1, j+=1){
-        piece = board[i][j];
-        if (bishopMoveValid(piece, row, i, col, j) && !isLeftInCheck(row, i, col, j, true)) moves[index++] = rowColToNum(i,j);
+        if (bishopMoveValid(piece, row, i, col, j) && !isLeftInCheck(row, i, col, j, color, true)) moves[index++] = rowColToNum(i,j);
+        else break;
     }
 
     // check down left direction
     for (short int i=row+1, j=col-1; inBounds(i, j); i+=1, j-=1){
-        piece = board[i][j];
-        if (bishopMoveValid(piece, row, i, col, j) && !isLeftInCheck(row, i, col, j, true)) moves[index++] = rowColToNum(i,j);
+        if (bishopMoveValid(piece, row, i, col, j) && !isLeftInCheck(row, i, col, j, color, true)) moves[index++] = rowColToNum(i,j);
+        else break;
     }
 
     // check down right direction
     for (short int i=row+1, j=col+1; inBounds(i, j); i+=1, j+=1){
-        piece = board[i][j];
-        if (bishopMoveValid(piece, row, i, col, j) && !isLeftInCheck(row, i, col, j, true)) moves[index++] = rowColToNum(i,j);
+        if (bishopMoveValid(piece, row, i, col, j) && !isLeftInCheck(row, i, col, j, color, true)) moves[index++] = rowColToNum(i,j);
+        else break;
     }
 
     moves[index] = -1;
@@ -990,29 +994,30 @@ bool Board::genRookMoves(short int row, short int col, short int moves[]){
     if ((board[row][col].getNameValue() != ROOK) && (board[row][col].getNameValue() != QUEEN)) return false;
     short int special = specialMove, index=0;
     ChessPiece piece = board[row][col];
+    short int color = piece.getColor();
 
     // check up direction
     for (short int i=row-1, j=col; inBounds(i, j); i-=1){
-        piece = board[i][j];
-        if (rookMoveValid(piece, row, i, col, j) && !isLeftInCheck(row, i, col, j, true)) moves[index++] = rowColToNum(i,j);
+        if (rookMoveValid(piece, row, i, col, j) && !isLeftInCheck(row, i, col, j, color, true)) moves[index++] = rowColToNum(i,j);
+        else break;
     }
 
     // check down direction
-    for (short int i=row+1, j=col; inBounds(i, j); i-=1){
-        piece = board[i][j];
-        if (rookMoveValid(piece, row, i, col, j) && !isLeftInCheck(row, i, col, j, true)) moves[index++] = rowColToNum(i,j);
+    for (short int i=row+1, j=col; inBounds(i, j); i+=1){
+        if (rookMoveValid(piece, row, i, col, j) && !isLeftInCheck(row, i, col, j, color, true)) moves[index++] = rowColToNum(i,j);
+        else break;
     }
 
     // check left direction
     for (short int i=row, j=col-1; inBounds(i, j); j-=1){
-        piece = board[i][j];
-        if (rookMoveValid(piece, row, i, col, j) && !isLeftInCheck(row, i, col, j, true)) moves[index++] = rowColToNum(i,j);
+        if (rookMoveValid(piece, row, i, col, j) && !isLeftInCheck(row, i, col, j, color, true)) moves[index++] = rowColToNum(i,j);
+        else break;
     }
 
     // check right direction
     for (short int i=row, j=col+1; inBounds(i, j); j+=1){
-        piece = board[i][j];
-        if (rookMoveValid(piece, row, i, col, j) && !isLeftInCheck(row, i, col, j, true)) moves[index++] = rowColToNum(i,j);
+        if (rookMoveValid(piece, row, i, col, j) && !isLeftInCheck(row, i, col, j, color, true)) moves[index++] = rowColToNum(i,j);
+        else break;
     }
 
     moves[index] = -1;
@@ -1027,7 +1032,7 @@ bool Board::genQueenMoves(short int row, short int col, short int moves[]){
     bool areMoves = false;
     areMoves = genBishopMoves(row,col,moves);
     while (moves[index++] != -1);
-    areMoves = areMoves || genRookMoves(row,col, moves+(index-1));
+    areMoves = genRookMoves(row,col, moves+(index-1)) || areMoves;
     return areMoves;
 }
 
@@ -1038,6 +1043,7 @@ bool Board::genPawnMoves(short int row, short int col, short int moves[]){
     short int special = specialMove, index=0, enPassantColor2 = enPassantColor;
     short int promotionPos2[2], enPassantPos2[2];
     ChessPiece piece = board[row][col];
+    short int color = piece.getColor();
 
     // store value in order to restore later
     assignArray(promotionPos2, promotionPos[0], promotionPos[1]);
@@ -1053,7 +1059,7 @@ bool Board::genPawnMoves(short int row, short int col, short int moves[]){
         k = pcolPos[i];
         if (inBounds(j, k)){
             // black piece
-            if (rookMoveValid(piece, row, j, col, k) && !isLeftInCheck(row, j, col, k, true)){
+            if (pawnMoveValid(piece, row, j, col, k) && !isLeftInCheck(row, j, col, k, color, true)){
                 moves[index++] = rowColToNum(j,k);
                 enPassantColor = enPassantColor2;
                 assignArray(enPassantPos, enPassantPos2[0], enPassantPos2[1]);
@@ -1062,6 +1068,7 @@ bool Board::genPawnMoves(short int row, short int col, short int moves[]){
     }
 
 
+    moves[index] = -1;
     specialMove = special;
     enPassantColor = enPassantColor2;
     assignArray(promotionPos, promotionPos2[0], promotionPos2[1]);
@@ -1276,6 +1283,41 @@ void Board::goForward(short int &start, short int &end, short int &special, shor
         if (color == BLACK) assignArray(bkPos, endRow, endCol);
         else assignArray(wkPos, endRow, endCol);
     }
+
+}
+
+bool Board::genMovesForPiece(short int pos, short int moves[]){
+    // return the moves that this piece can make
+    // return true if it can move
+
+    short int row, col, row1, col1;
+    bool canMove = false;
+    numToRowCol(pos, 0, row, row1, col, col1);
+
+    switch (board[row][col].getNameValue()) {
+        case 1:
+            canMove = genPawnMoves(row, col, moves);
+            break;
+        case 2:
+            canMove = genRookMoves(row, col, moves);
+            break;
+        case 3:
+            canMove = genKnightMoves(row, col, moves);
+            break;
+        case 4:
+            canMove = genBishopMoves(row, col, moves);
+            break;
+        case 5:
+            canMove = genQueenMoves(row, col, moves);
+            break;
+        case 6:
+            canMove = genKingMoves(row, col, moves);
+            break;
+        default:
+            moves[0] = -1;
+            break;
+    }
+    return canMove;
 
 }
 

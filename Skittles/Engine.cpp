@@ -56,3 +56,7 @@ void Engine::goForward(short int &start, short int &end, short int &special, sho
 void Engine::moveStats(short int &pieceMoved, short int &color, bool &capture, bool &check, bool &checkmate){
     board.moveStats(pieceMoved, color, capture, check, checkmate);
 }
+
+bool Engine::genMovesForPiece(short int pos, short int moves[]){
+    return board.genMovesForPiece(pos, moves);
+}

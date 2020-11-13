@@ -75,6 +75,7 @@ public:
     void goBack(short int &start, short int &end, short int &special, short int &promoPiece, short int &capturedPiece, short int &color);
     void goForward(short int &start, short int &end, short int &special, short int &promoPiece, short int &capturedPiece, short int &color);
     void moveStats(short int &pieceMoved, short int &color, bool &capture, bool &check, bool &checkmate);
+    bool genMovesForPiece(short int pos, short int moves[]);
 
 private:
     bool pawnMoveValid(ChessPiece pawn, short int startRow, short int endRow, short int startCol, short int endCol);
@@ -83,7 +84,7 @@ private:
     bool bishopMoveValid(ChessPiece bishop, short int startRow, short int endRow, short int startCol, short int endCol);
     bool queenMoveValid(ChessPiece queen, short int startRow, short int endRow, short int startCol, short int endCol);
     bool kingMoveValid(ChessPiece king, short int startRow, short int endRow, short int startCol, short int endCol);
-    bool isLeftInCheck(short int startRow, short int endRow, short int startCol, short int endCol, bool undo);
+    bool isLeftInCheck(short int startRow, short int endRow, short int startCol, short int endCol, short int color, bool undo);
     void movePiece(short int startRow, short int endRow, short int startCol, short int endCol);
     bool isChecked(short int row, short int col, ChessPiece cboard[8][8], short int color, short int rowList[], short int colList[], bool storeCheck=false);
     bool isMate(short int row, short int col, ChessPiece cboard[8][8], short int rowList[], short int colList[]);

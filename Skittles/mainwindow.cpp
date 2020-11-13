@@ -58,6 +58,8 @@ void MainWindow::buttonPressed(int id){
         QPalette pal = btn2->palette();
         pal.setColor(QPalette::Button, selectColor);
         btn2->setPalette(pal);
+        engine.genMovesForPiece(id, pMoves);
+        highlightButtons(pMoves, canGoColor, true);
         return;
     }
 
@@ -66,6 +68,7 @@ void MainWindow::buttonPressed(int id){
         firstClick = -1;
         secondClick = -1;
         restoreButtonColor(btn2, id);
+        highlightButtons(pMoves, canGoColor, false);
         return;
     }
 
@@ -74,6 +77,7 @@ void MainWindow::buttonPressed(int id){
     QPushButton *btn1 = (QPushButton *) btnGroup.button(firstClick);
     bool valid = engine.validate(firstClick, secondClick);
     restoreButtonColor(btn1, firstClick);
+    highlightButtons(pMoves, canGoColor, false);
     short int winner, reason;
 
 
@@ -172,11 +176,15 @@ void MainWindow::undoMove(){
     if (start == -1) return;
 
     // check if forward and back buttons should be greyed out
+    // reset highlighting
     handleUndoMove(start, end, special, capturedPiece, color);
     sidebar->removeMove(color);
     sidebar->hideGameOver();
     if (engine.isStart()) sidebar->getBackButton()->setEnabled(false);
     sidebar->getForwardButton()->setEnabled(true);
+    highlightButtons(pMoves, canGoColor, false);
+    QPushButton *btn = (QPushButton *) btnGroup.button(firstClick);
+    if (btn != nullptr) restoreButtonColor(btn, firstClick);
 }
 
 void MainWindow::redoMove(){
@@ -186,10 +194,7 @@ void MainWindow::redoMove(){
     short int start, end, special, promoPiece, capturedPiece, color;
     engine.goForward(start, end, special, promoPiece, capturedPiece, color);
 
-    if (start == -1){
-        // TODO: have a message that you can't go forward, or grey out button, so need a new func
-        return;
-    }
+    if (start == -1) return;
 
     QPushButton *btnStart = (QPushButton *) btnGroup.button(start);
     QPushButton *btnEnd = (QPushButton *) btnGroup.button(end);
@@ -243,6 +248,7 @@ void MainWindow::redoMove(){
     // check if forward and back buttons should be greyed out
     if (engine.isEnd()) sidebar->getForwardButton()->setEnabled(false);
     sidebar->getBackButton()->setEnabled(true);
+    highlightButtons(pMoves, canGoColor, false);
 
 }
 
@@ -391,6 +397,32 @@ void MainWindow::handleUndoMove(short int start, short int end, short int specia
             // no special
             break;
     }
+
+}
+
+void MainWindow::highlightButtons(short int btnList[], QColor color, bool highlight){
+    // change the buttons in btnList to have color
+    // or restore the buttons to their orighinal colors
+
+    short int i = -1;
+    QPushButton *btn;
+    QPalette pal;
+
+    if (highlight){
+        while (btnList[++i] != -1){
+            btn = (QPushButton *) btnGroup.button(btnList[i]);
+            pal = btn->palette();
+            pal.setColor(QPalette::Button, color);
+            btn->setPalette(pal);
+        }
+    }
+    else{
+        while (btnList[++i] != -1){
+            btn = (QPushButton *) btnGroup.button(btnList[i]);
+            restoreButtonColor(btn, btnList[i]);
+        }
+    }
+
 
 }
 

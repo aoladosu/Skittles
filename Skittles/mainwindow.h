@@ -34,7 +34,7 @@ private:
     QColor darkerColor = QColor(46, 46, 46);
     QColor lighterColor = QColor(237, 237, 237);
     QColor selectColor = QColor(0, 255, 0);
-    QColor altSelectColor = QColor(255, 0, 0);
+    QColor canGoColor = QColor(255, 0, 0);
 
     // images
     QIcon blackPawnIcon = QIcon(":/imagesPieces/black_pawn");
@@ -53,6 +53,9 @@ private:
     // what pieces to move
     short int firstClick = -1;
     short int secondClick = -1;
+
+    // what squares to highlight
+    short int pMoves[35];
 
     // chess engine
     Engine engine;
@@ -82,6 +85,7 @@ private:
     void castle(short int castleType);
     void addLabels();
     void insertLabels(QSizePolicy sizePolicy, QString text, short int row, short int col);
+    void highlightButtons(short int btnList[], QColor color, bool highlight);
 
 public:
     MainWindow(QWidget *parent = nullptr);
