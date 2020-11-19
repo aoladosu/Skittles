@@ -19,7 +19,7 @@ public:
 
     MoveList();
     ~MoveList();
-    void createMove(short int startPos, short int endPos, short int passantArray[2], short int passantColor, short int special, bool capture, short int promoTo, ChessPiece capturedPiece, bool mate, short int moved, bool check);
+    void createMove(short int startPos, short int endPos, short int passantArray[2], short int passantColor, short int special, bool capture, short int promoTo, ChessPiece capturedPiece, bool mate, short int moved, bool check, bool stalemate, bool insuff);
     Move* getPrevious();
     Move* getNext();
     bool isStart();

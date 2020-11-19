@@ -711,7 +711,7 @@ bool Board::isMate(short int row, short int col, ChessPiece cboard[8][8], short 
                 // modify cboard, move king
                 piece = cboard[j][k];
                 cboard[j][k] = king;
-                if (!isChecked(j, k, cboard, oppColor, rowInfo, colInfo)) {
+                if (!isChecked(j, k, cboard, color, rowInfo, colInfo)) {
                     // undo modify board
                     cboard[j][k] = piece;
                     cboard[row][col] = king;
@@ -790,7 +790,7 @@ bool Board::isDraw(){
             if (piece.getColor() == BLACK){
                 bPieces[bIndex++] = rowColToNum(i, j);
             }
-            else{
+            else if (piece.getColor() == WHITE){
                 wPieces[wIndex++] = rowColToNum(i, j);
             }
         }
@@ -805,18 +805,18 @@ bool Board::isDraw(){
         if (bIndex == 1) bInsuff = true;
         else if (bIndex == 2){
             // king + bishop/knight
-            numToRowCol(bPieces[0], 0, row, col, row1, col1);
+            numToRowCol(bPieces[0], 0, row, row1, col, col1);
             bInsuff = ((board[row][col].getNameValue() == BISHOP) || (board[row][col].getNameValue() == KNIGHT));
-            numToRowCol(bPieces[1], 0, row, col, row1, col1);
+            numToRowCol(bPieces[1], 0, row, row1, col, col1);
             bInsuff = (bInsuff || ((board[row][col].getNameValue() == BISHOP) || (board[row][col].getNameValue() == KNIGHT)));
         }
         else if (bIndex == 3){
             // king + 2 Knights
-            numToRowCol(bPieces[0], 0, row, col, row1, col1);
+            numToRowCol(bPieces[0], 0, row, row1, col, col1);
             p1 = board[row][col].getNameValue() == KNIGHT;
-            numToRowCol(bPieces[1], 0, row, col, row1, col1);
+            numToRowCol(bPieces[1], 0, row, row1, col, col1);
             p2 = board[row][col].getNameValue() == KNIGHT;
-            numToRowCol(bPieces[2], 0, row, col, row1, col1);
+            numToRowCol(bPieces[2], 0, row, row1, col, col1);
             p3 = board[row][col].getNameValue() == KNIGHT;
             bInsuff = (p1 + p2 + p3 == 2);
         }
@@ -825,18 +825,18 @@ bool Board::isDraw(){
         if (wIndex == 1) wInsuff = true;
         else if (wIndex == 2){
             // king + bishop/knight
-            numToRowCol(wPieces[0], 0, row, col, row1, col1);
+            numToRowCol(wPieces[0], 0, row, row1, col, col1);
             wInsuff = ((board[row][col].getNameValue() == BISHOP) || (board[row][col].getNameValue() == KNIGHT));
-            numToRowCol(wPieces[1], 0, row, col, row1, col1);
+            numToRowCol(wPieces[1], 0, row, row1, col, col1);
             wInsuff = (wInsuff || ((board[row][col].getNameValue() == BISHOP) || (board[row][col].getNameValue() == KNIGHT)));
         }
         else if (wIndex == 3){
             // king + 2 Knights
-            numToRowCol(wPieces[0], 0, row, col, row1, col1);
+            numToRowCol(wPieces[0], 0, row, row1, col, col1);
             p1 = board[row][col].getNameValue() == KNIGHT;
-            numToRowCol(wPieces[1], 0, row, col, row1, col1);
+            numToRowCol(wPieces[1], 0, row, row1, col, col1);
             p2 = board[row][col].getNameValue() == KNIGHT;
-            numToRowCol(wPieces[2], 0, row, col, row1, col1);
+            numToRowCol(wPieces[2], 0, row, row1, col, col1);
             p3 = board[row][col].getNameValue() == KNIGHT;
             wInsuff = ((p1 + p2 + p3) == 2);
         }
@@ -851,20 +851,23 @@ bool Board::isDraw(){
     // check for stalemate
     bPieces[bIndex++] = -1;
     wPieces[wIndex++] = -1;
-    //if (toPlay == BLACK) STALEMATE = isStalemate(bPieces);
-    //else STALEMATE = isStalemate(wPieces);
-    return INSUFFMAT;
+    if (toPlay == BLACK) STALEMATE = isStalemate(bPieces);
+    else STALEMATE = isStalemate(wPieces);
+    return STALEMATE;
 
 }
 
 bool Board::isStalemate(short int pieces[]){
     // check for stalemate
 
+    qDebug() << "checking for stalemate";
+
     short int row, col, row1, col1, index=0, moves[35];
     bool canMove = false;
 
     while (pieces[index] != -1){
-        numToRowCol(pieces[index], 0, row, col, row1, col1);
+        numToRowCol(pieces[index], 0, row, row1, col, col1);
+        qDebug() << "row: " << row << " col: " << col;
         switch (board[row][col].getNameValue()) {
             case 1:
                 canMove = genPawnMoves(row, col, moves);
@@ -885,10 +888,12 @@ bool Board::isStalemate(short int pieces[]){
                 canMove = genKingMoves(row, col, moves);
                 break;
         }
-        index += 1;
-        if (canMove) return false;
-    }
 
+        qDebug() << "canMove: " << canMove;
+        index += 1;
+        if (canMove) {qDebug() << "returning false"; return false; }
+    }
+    qDebug() << "i'm returning true just because";
     return true;
 }
 
@@ -1135,15 +1140,22 @@ void Board::goBack(short int &start, short int &end, short int &special, short i
     if (move2 != nullptr){
         assignArray(enPassantPos, move2->enPassant[0], move2->enPassant[1]);
         enPassantColor = move2->enPassantColor;
+        MATE = move2->mate;
+        CHECK = move2->check;
+        STALEMATE = move2->stalemate;
+        INSUFFMAT = move2->insuff;
     }
     else{
         assignArray(enPassantPos, -2, -2);
         enPassantColor = -1;
+        MATE = false;
+        CHECK = false;
+        STALEMATE = false;
+        INSUFFMAT = false;
     }
 
     specialMove = NOSPECIAL;
-    MATE = move->mate;
-    CHECK = move->check;
+    DRAW = (STALEMATE | INSUFFMAT);
 
     // set pieces including captured back
     short int startRow, endRow, startCol, endCol, specialmv;
@@ -1228,6 +1240,9 @@ void Board::goForward(short int &start, short int &end, short int &special, shor
     enPassantColor = move->enPassantColor;
     MATE = move->mate;
     CHECK = move->check;
+    STALEMATE = move->stalemate;
+    INSUFFMAT = move->insuff;
+    DRAW = (STALEMATE | INSUFFMAT);
     short int startRow, endRow, startCol, endCol;
     specialMove = move->specialMove;
     if (specialMove == PROMOTION) specialMove = NOSPECIAL;
@@ -1391,7 +1406,7 @@ void Board::addMove(short int start, short int end){
     // add a move to the movelist
 
     bool capture = captured.getNameValue() != EMPTY;
-    moveList.createMove(start, end, enPassantPos, enPassantColor, specialMove, capture, promoTo, captured, MATE, movedStore, CHECK);
+    moveList.createMove(start, end, enPassantPos, enPassantColor, specialMove, capture, promoTo, captured, MATE, movedStore, CHECK, STALEMATE, INSUFFMAT);
 }
 
 bool Board::inBounds(short int row, short int col) {
