@@ -34,7 +34,10 @@ private:
     QColor darkerColor = QColor(46, 46, 46);
     QColor lighterColor = QColor(237, 237, 237);
     QColor selectColor = QColor(0, 255, 0);
-    QColor canGoColor = QColor(255, 0, 0);
+    QColor pMoveColor = QColor(0, 0, 255);
+    QColor cMoveColor = QColor(255, 0, 0);
+    QColor aMoveColor = QColor(255, 255, 0);
+    QColor checkColor = QColor(255, 165, 0);
 
     // images
     QIcon blackPawnIcon = QIcon(":/imagesPieces/black_pawn");
@@ -55,7 +58,10 @@ private:
     short int secondClick = -1;
 
     // what squares to highlight
-    short int pMoves[35];
+    short int pMoves[35];       // where piece can move
+    short int cMoves[10];       // where they can move and capture
+    short int aMoves[10];       // pieces that are attacking this one
+    short int chMoves[6] = {-1};       // what pieces are attacking king
 
     // chess engine
     Engine engine;

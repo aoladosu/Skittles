@@ -1,8 +1,6 @@
 #include "Board.h"
 #include <QtMath>
 
-#include <QDebug>
-
 Board::Board(){}
 Board::~Board(){}
 
@@ -860,14 +858,11 @@ bool Board::isDraw(){
 bool Board::isStalemate(short int pieces[]){
     // check for stalemate
 
-    qDebug() << "checking for stalemate";
-
     short int row, col, row1, col1, index=0, moves[35];
     bool canMove = false;
 
     while (pieces[index] != -1){
         numToRowCol(pieces[index], 0, row, row1, col, col1);
-        qDebug() << "row: " << row << " col: " << col;
         switch (board[row][col].getNameValue()) {
             case 1:
                 canMove = genPawnMoves(row, col, moves);
@@ -888,12 +883,9 @@ bool Board::isStalemate(short int pieces[]){
                 canMove = genKingMoves(row, col, moves);
                 break;
         }
-
-        qDebug() << "canMove: " << canMove;
         index += 1;
-        if (canMove) {qDebug() << "returning false"; return false; }
+        if (canMove) return false;
     }
-    qDebug() << "i'm returning true just because";
     return true;
 }
 
@@ -1301,11 +1293,11 @@ void Board::goForward(short int &start, short int &end, short int &special, shor
 
 }
 
-bool Board::genMovesForPiece(short int pos, short int moves[]){
+bool Board::genMovesForPiece(short int pos, short int moves[], short int cMoves[], short int aMoves[]){
     // return the moves that this piece can make
     // return true if it can move
 
-    short int row, col, row1, col1;
+    short int row, col, row1, col1, index=0, cIndex=0;
     bool canMove = false;
     numToRowCol(pos, 0, row, row1, col, col1);
 
@@ -1332,8 +1324,53 @@ bool Board::genMovesForPiece(short int pos, short int moves[]){
             moves[0] = -1;
             break;
     }
+
+    // copy moves that capture to cMoves
+    while (moves[index] != -1){
+        numToRowCol(moves[index], 0, row, row1, col, col1);
+        if (board[row][col].getNameValue() != EMPTY) cMoves[cIndex++] = moves[index];
+        index += 1;
+    }
+    cMoves[cIndex++] = -1;
+
+    // get list of pieces that attack this piece
+    short int rowList[17], colList[17], color;
+    numToRowCol(pos, 0, row, row1, col, col1);
+    color = board[row][col].getColor();
+    if (color == -1) color = toPlay;
+    isChecked(row, col, board, color, rowList, colList, false);
+    index = 0;
+    while (rowList[index] != -1) {
+        aMoves[index] = rowColToNum(rowList[index], colList[index]);
+        index += 1;
+    }
+    aMoves[index] = -1;
+
     return canMove;
 
+}
+
+void Board::checkPositions(short int pos[]){
+    // return position of king and list of pieces attacking king
+
+    short int color = toPlay;
+    short int rowList[17], colList[17], row, col, index=0;
+    if (color == BLACK){
+        row = bkPos[0];
+        col = bkPos[1];
+    }
+    else{
+        row = wkPos[0];
+        col = wkPos[1];
+    }
+
+    isChecked(row, col, board, color, rowList, colList, false);
+    while (rowList[index] != -1) {
+        pos[index] = rowColToNum(rowList[index], colList[index]);
+        index += 1;
+    }
+    if(index != 0) pos[index++] = rowColToNum(row,col);
+    pos[index] = -1;
 }
 
 void Board::moveStats(short int &pieceMoved, short int &color, bool &capture, bool &check, bool &checkmate){
@@ -1413,7 +1450,7 @@ bool Board::inBounds(short int row, short int col) {
     return ((row >= 0) && (row < BOARDSIZE) && (col >= 0) && (col < BOARDSIZE));
 }
 
-int Board::value()
+short int Board::value()
 {
     // sum up the value of the board
 

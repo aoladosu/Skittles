@@ -58,8 +58,10 @@ void MainWindow::buttonPressed(int id){
         QPalette pal = btn2->palette();
         pal.setColor(QPalette::Button, selectColor);
         btn2->setPalette(pal);
-        engine.genMovesForPiece(id, pMoves);
-        highlightButtons(pMoves, canGoColor, true);
+        engine.genMovesForPiece(id, pMoves, cMoves, aMoves);
+        highlightButtons(pMoves, pMoveColor, true);
+        highlightButtons(aMoves, aMoveColor, true);
+        highlightButtons(cMoves, cMoveColor, true);
         return;
     }
 
@@ -68,7 +70,9 @@ void MainWindow::buttonPressed(int id){
         firstClick = -1;
         secondClick = -1;
         restoreButtonColor(btn2, id);
-        highlightButtons(pMoves, canGoColor, false);
+        highlightButtons(pMoves, pMoveColor, false);
+        highlightButtons(cMoves, cMoveColor, false);
+        highlightButtons(aMoves, aMoveColor, false);
         return;
     }
 
@@ -77,7 +81,10 @@ void MainWindow::buttonPressed(int id){
     QPushButton *btn1 = (QPushButton *) btnGroup.button(firstClick);
     bool valid = engine.validate(firstClick, secondClick);
     restoreButtonColor(btn1, firstClick);
-    highlightButtons(pMoves, canGoColor, false);
+    highlightButtons(pMoves, pMoveColor, false);
+    highlightButtons(cMoves, cMoveColor, false);
+    highlightButtons(aMoves, aMoveColor, false);
+    highlightButtons(chMoves, checkColor, false);
     short int winner, reason;
 
 
@@ -96,6 +103,10 @@ void MainWindow::buttonPressed(int id){
         }
         sidebar->getBackButton()->setEnabled(true);
         sidebar->getForwardButton()->setEnabled(false);
+        if (check){
+            engine.checkPositions(chMoves);
+            highlightButtons(chMoves, checkColor, true);
+        }
     }
 
     firstClick = -1;
@@ -182,7 +193,11 @@ void MainWindow::undoMove(){
     sidebar->hideGameOver();
     if (engine.isStart()) sidebar->getBackButton()->setEnabled(false);
     sidebar->getForwardButton()->setEnabled(true);
-    highlightButtons(pMoves, canGoColor, false);
+    highlightButtons(pMoves, pMoveColor, false);
+    highlightButtons(cMoves, cMoveColor, false);
+    highlightButtons(aMoves, aMoveColor, false);
+    highlightButtons(chMoves, checkColor, false);
+    highlightButtons(chMoves, checkColor, false);
     QPushButton *btn = (QPushButton *) btnGroup.button(firstClick);
     if (btn != nullptr) restoreButtonColor(btn, firstClick);
 }
@@ -248,7 +263,11 @@ void MainWindow::redoMove(){
     // check if forward and back buttons should be greyed out
     if (engine.isEnd()) sidebar->getForwardButton()->setEnabled(false);
     sidebar->getBackButton()->setEnabled(true);
-    highlightButtons(pMoves, canGoColor, false);
+    highlightButtons(pMoves, pMoveColor, false);
+    highlightButtons(cMoves, cMoveColor, false);
+    highlightButtons(aMoves, aMoveColor, false);
+    highlightButtons(chMoves, checkColor, false);
+    highlightButtons(chMoves, checkColor, false);
 
 }
 

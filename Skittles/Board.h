@@ -62,7 +62,7 @@ public:
     Board();
     ~Board();
     void init();
-    int value();
+    short int value();
     bool validate(short int start, short int end);
     void switchToPlay();
     short int getSpecial();
@@ -75,7 +75,8 @@ public:
     void goBack(short int &start, short int &end, short int &special, short int &promoPiece, short int &capturedPiece, short int &color);
     void goForward(short int &start, short int &end, short int &special, short int &promoPiece, short int &capturedPiece, short int &color);
     void moveStats(short int &pieceMoved, short int &color, bool &capture, bool &check, bool &checkmate);
-    bool genMovesForPiece(short int pos, short int moves[]);
+    bool genMovesForPiece(short int pos, short int moves[], short int cMoves[], short int aMoves[]);
+    void checkPositions(short int pos[]);
 
 private:
     bool pawnMoveValid(ChessPiece pawn, short int startRow, short int endRow, short int startCol, short int endCol);

@@ -57,6 +57,10 @@ void Engine::moveStats(short int &pieceMoved, short int &color, bool &capture, b
     board.moveStats(pieceMoved, color, capture, check, checkmate);
 }
 
-bool Engine::genMovesForPiece(short int pos, short int moves[]){
-    return board.genMovesForPiece(pos, moves);
+bool Engine::genMovesForPiece(short int pos, short int moves[], short int cMoves[], short int aMoves[]){
+    return board.genMovesForPiece(pos, moves, cMoves, aMoves);
+}
+
+void Engine::checkPositions(short int pos[]){
+    return board.checkPositions(pos);
 }
