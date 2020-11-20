@@ -84,7 +84,6 @@ void MainWindow::buttonPressed(int id){
     highlightButtons(pMoves, pMoveColor, false);
     highlightButtons(cMoves, cMoveColor, false);
     highlightButtons(aMoves, aMoveColor, false);
-    highlightButtons(chMoves, checkColor, false);
     short int winner, reason;
 
 
@@ -106,6 +105,9 @@ void MainWindow::buttonPressed(int id){
         if (check){
             engine.checkPositions(chMoves);
             highlightButtons(chMoves, checkColor, true);
+        }
+        else{
+            highlightButtons(chMoves, checkColor, false);
         }
     }
 

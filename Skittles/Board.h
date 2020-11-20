@@ -55,7 +55,21 @@ private:
     ChessPiece movedPiece;                              // piece that was moved
 
     // Error codes
-    enum Error:short int {};
+    enum Error:short int {mate,                         // one side has won from check, game can't continue
+                          draw,                         // game has been drawn, can't continue
+                          promotion,                    // a pawn needs to be promoted
+                          boundary,                     // the start or end position was out of bounds
+                          color,                        // the wrong color is trying to play
+                          kingInCheck,                  // the move is valid, but it leaves the king in check
+                          pawnOntoPiece,                // pawn is trying to move onto a piece, but not diagonally for a capture
+                          pawnDoubleSpace,              // pawn is trying to move forward by two, but it has already moved
+                          selfCapture,                  // trying to capture own piece
+                          enpassant,                    // trying to enpassant, but conditions not met
+                          badMovement,                  // piece not moved correctly
+                          jump,                         // a piece is trying to jump over another
+                          castle,                       // one or more of the castling rules was not met
+                          none                          // no errors, everything handles well
+                         };
     Error ERROR;
 
 
@@ -92,7 +106,7 @@ private:
     bool kingMoveValid(ChessPiece king, short int startRow, short int endRow, short int startCol, short int endCol);
     bool isLeftInCheck(short int startRow, short int endRow, short int startCol, short int endCol, short int color, bool undo);
     void movePiece(short int startRow, short int endRow, short int startCol, short int endCol);
-    bool isChecked(short int row, short int col, ChessPiece cboard[8][8], short int color, short int rowList[], short int colList[], bool storeCheck=false);
+    bool isChecked(short int row, short int col, ChessPiece cboard[8][8], short int color, short int rowList[], short int colList[]);
     bool isMate(short int row, short int col, ChessPiece cboard[8][8], short int rowList[], short int colList[]);
     bool isDraw();
     bool isStalemate(short int pieces[]);
