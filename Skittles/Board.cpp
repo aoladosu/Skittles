@@ -151,8 +151,8 @@ bool Board::validate(short int start, short int end)
         // add move to movelist
         startPos = start;
         addMove(start, end);
+        ERROR = none;
     }
-    ERROR = none;
     return valid;
 }
 

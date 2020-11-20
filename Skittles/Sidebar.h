@@ -19,6 +19,7 @@ private:
     // variables for layouts in sidebar
     QGridLayout *gridLayout;
     QLabel *title;
+    QLabel *error;
     QGridLayout *result;
     QListWidget *moveList;
     QHBoxLayout *bottom;
@@ -48,7 +49,8 @@ public:
     void hidePromotion();
     void showGameOver(short int winner, short int reason);
     void hideGameOver();
-
+    void showError(short int err);
+    void hideError();
 
 signals:
 

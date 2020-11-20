@@ -45,6 +45,10 @@ bool Engine::isEnd(){
     return board.isEnd();
 }
 
+short int Engine::getErrorState(){
+    return board.getErrorState();
+}
+
 void Engine::goBack(short int &start, short int &end, short int &special, short int &promoPiece, short int &capturedPiece, short int &color){
     board.goBack(start, end, special, promoPiece, capturedPiece, color);
 }

@@ -3,6 +3,7 @@
 #include <QLayout>
 #include <Qt>
 #include <QSizePolicy>
+#include <QDebug>
 
 MainWindow::MainWindow(QWidget *parent): QMainWindow(parent)
 {
@@ -50,6 +51,7 @@ void MainWindow::buttonPressed(int id){
     QPushButton *btn2 = (QPushButton *) btnGroup.button(id);
     short int special, pieceMoved, color;
     bool capture, check, checkmate;
+    sidebar->hideError();
 
 
     if (firstClick == -1){
@@ -108,6 +110,15 @@ void MainWindow::buttonPressed(int id){
         }
         else{
             highlightButtons(chMoves, checkColor, false);
+        }
+    }
+    else{
+        qDebug() <<  "invalid move!";
+        short int err = engine.getErrorState();
+        qDebug() << "error code: " << err;
+        if ((err != 13) && (err > 3)){
+            qDebug() << "sending error";
+            sidebar->showError(err);
         }
     }
 
@@ -172,6 +183,7 @@ void MainWindow::newGame(){
     sidebar->hideGameOver();
     sidebar->getBackButton()->setEnabled(false);
     sidebar->getForwardButton()->setEnabled(false);
+    sidebar->hideError();
     for (short int i=0; i<BOARDSIZE*BOARDSIZE; i++){
         btn = (QPushButton *) btnGroup.button(i);
         restoreButtonColor(btn, i);
@@ -184,6 +196,7 @@ void MainWindow::undoMove(){
     // variables to get info back
     short int start, end, special, promoPiece, capturedPiece, color;
     engine.goBack(start, end, special, promoPiece, capturedPiece, color);
+    sidebar->hideError();
 
     // nothing to go back to
     if (start == -1) return;
@@ -220,6 +233,7 @@ void MainWindow::redoMove(){
     // variables to get info back
     short int start, end, special, promoPiece, capturedPiece, color;
     engine.goForward(start, end, special, promoPiece, capturedPiece, color);
+    sidebar->hideError();
 
     if (start == -1) return;
 

@@ -58,10 +58,10 @@ private:
     short int secondClick = -1;
 
     // what squares to highlight
-    short int pMoves[35];       // where piece can move
-    short int cMoves[10];       // where they can move and capture
-    short int aMoves[10];       // pieces that are attacking this one
-    short int chMoves[6] = {-1};       // what pieces are attacking king
+    short int pMoves[35];               // where piece can move
+    short int cMoves[10];               // where they can move and capture
+    short int aMoves[10];               // pieces that are attacking this one
+    short int chMoves[6] = {-1};        // what pieces are attacking king
 
     // chess engine
     Engine engine;
@@ -104,7 +104,5 @@ private slots:
     void redoMove();
     void promotion(int id);
     void newGame();
-
-
 };
 

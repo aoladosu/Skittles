@@ -65,9 +65,9 @@ private:
                           pawnDoubleSpace,              // pawn is trying to move forward by two, but it has already moved
                           selfCapture,                  // trying to capture own piece
                           enpassant,                    // trying to enpassant, but conditions not met
-                          badMovement,                  // piece not moved correctly
                           jump,                         // a piece is trying to jump over another
                           castle,                       // one or more of the castling rules was not met
+                          badMovement,                  // piece not moved correctly
                           none                          // no errors, everything handles well
                          };
     Error ERROR;
