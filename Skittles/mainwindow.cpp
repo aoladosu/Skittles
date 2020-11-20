@@ -186,20 +186,30 @@ void MainWindow::undoMove(){
     // nothing to go back to
     if (start == -1) return;
 
-    // check if forward and back buttons should be greyed out
-    // reset highlighting
-    handleUndoMove(start, end, special, capturedPiece, color);
-    sidebar->removeMove(color);
-    sidebar->hideGameOver();
-    if (engine.isStart()) sidebar->getBackButton()->setEnabled(false);
-    sidebar->getForwardButton()->setEnabled(true);
+    // clear highlighting
     highlightButtons(pMoves, pMoveColor, false);
     highlightButtons(cMoves, cMoveColor, false);
     highlightButtons(aMoves, aMoveColor, false);
     highlightButtons(chMoves, checkColor, false);
     highlightButtons(chMoves, checkColor, false);
+
+    // check if forward and back buttons should be greyed out
+    handleUndoMove(start, end, special, capturedPiece, color);
+    sidebar->removeMove(color);
+    sidebar->hideGameOver();
+    if (engine.isStart()) sidebar->getBackButton()->setEnabled(false);
+    sidebar->getForwardButton()->setEnabled(true);
     QPushButton *btn = (QPushButton *) btnGroup.button(firstClick);
     if (btn != nullptr) restoreButtonColor(btn, firstClick);
+
+    short int pieceMoved;
+    bool capture, check, checkmate;
+    engine.moveStats(pieceMoved, color, capture, check, checkmate);
+    if (check){
+        engine.checkPositions(chMoves);
+        highlightButtons(chMoves, checkColor, true);
+    }
+
 }
 
 void MainWindow::redoMove(){
@@ -210,6 +220,15 @@ void MainWindow::redoMove(){
     engine.goForward(start, end, special, promoPiece, capturedPiece, color);
 
     if (start == -1) return;
+
+    // clear highlighting
+    highlightButtons(pMoves, pMoveColor, false);
+    highlightButtons(cMoves, cMoveColor, false);
+    highlightButtons(aMoves, aMoveColor, false);
+    highlightButtons(chMoves, checkColor, false);
+    highlightButtons(chMoves, checkColor, false);
+
+
 
     QPushButton *btnStart = (QPushButton *) btnGroup.button(start);
     QPushButton *btnEnd = (QPushButton *) btnGroup.button(end);
@@ -224,6 +243,11 @@ void MainWindow::redoMove(){
 
     engine.moveStats(pieceMoved, color, capture, check, checkmate);
     sidebar->addMove(pieceMoved, start, end, color, capture, check, checkmate, special, promoPiece);
+
+    if (check){
+        engine.checkPositions(chMoves);
+        highlightButtons(chMoves, checkColor, true);
+    }
 
     if (special == 1){
         // promotion
@@ -263,11 +287,7 @@ void MainWindow::redoMove(){
     // check if forward and back buttons should be greyed out
     if (engine.isEnd()) sidebar->getForwardButton()->setEnabled(false);
     sidebar->getBackButton()->setEnabled(true);
-    highlightButtons(pMoves, pMoveColor, false);
-    highlightButtons(cMoves, cMoveColor, false);
-    highlightButtons(aMoves, aMoveColor, false);
-    highlightButtons(chMoves, checkColor, false);
-    highlightButtons(chMoves, checkColor, false);
+
 
 }
 

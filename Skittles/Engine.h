@@ -19,7 +19,7 @@ public:
     short int getWinReason();                                           // get what caused the win
     bool isStart();                                                     // check if there is a previous move
     bool isEnd();                                                       // check if there is a next move
-    void checkPositions(short int pos[]);                          // get positions of check
+    void checkPositions(short int pos[]);                               // get positions of check
     bool genMovesForPiece(short int pos, short int moves[], short int cMoves[], short int aMoves[]);                                                // get moves for piece
     void goBack(short int &start, short int &end, short int &special, short int &promoPiece, short int &capturedPiece, short int &color);           // go back one move
     void goForward(short int &start, short int &end, short int &special, short int &promoPiece, short int &capturedPiece, short int &color);        // go forward one move

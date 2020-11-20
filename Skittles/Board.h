@@ -52,8 +52,12 @@ private:
     short int promoTo;                                  // piece promoted to
     short int startPos;                                 // starting position of piece
     ChessPiece captured;                                // piece that is captured by move
+    ChessPiece movedPiece;                              // piece that was moved
 
-    ChessPiece movedPiece;
+    // Error codes
+    enum Error:short int {};
+    Error ERROR;
+
 
     // the board
     ChessPiece board[8][8];
@@ -69,6 +73,7 @@ public:
     bool gameOver();
     short int getWinner();
     short int getWinReason();
+    short int getErrorState();
     bool isStart();
     bool isEnd();
     bool promote(short int pieceNameVal);

@@ -1511,6 +1511,11 @@ short int Board::getWinReason(){
     return 3;
 }
 
+short int Board::getErrorState(){
+    // get error code/reason
+    return ERROR;
+}
+
 bool Board::isStart(){
     return moveList.isStart();
 }
