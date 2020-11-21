@@ -8,22 +8,18 @@ void Board::init()
 {
     // initialize the board with a new game and place pieces on board
 
-    short int blackVals[] = {50, 30, 30, 90, 900, 30, 30, 50};
-    short int blackpawnVals = 10;
     short int blackNameVals[] = { ROOK, KNIGHT, BISHOP, QUEEN, KING, BISHOP, KNIGHT, ROOK };
-    short int whiteVals[] = {-50, -30, -30, -90, -900, -30, -30, -50};
-    short int whitepawnVals = -10;
     short int whiteNameVals[] = { ROOK, KNIGHT, BISHOP, QUEEN, KING, BISHOP, KNIGHT, ROOK };
 
     for (short int i = 0; i < BOARDSIZE; i++) {
-        board[0][i] = ChessPiece(blackVals[i], blackNameVals[i], BLACK);
-        board[1][i] = ChessPiece(blackpawnVals, PAWN, BLACK);
+        board[0][i] = ChessPiece(blackNameVals[i], BLACK);
+        board[1][i] = ChessPiece(PAWN, BLACK);
         board[2][i] = ChessPiece();
         board[3][i] = ChessPiece();
         board[4][i] = ChessPiece();
         board[5][i] = ChessPiece();
-        board[6][i] = ChessPiece(whitepawnVals, PAWN, WHITE);
-        board[7][i] = ChessPiece(whiteVals[i], whiteNameVals[i], WHITE);
+        board[6][i] = ChessPiece(PAWN, WHITE);
+        board[7][i] = ChessPiece(whiteNameVals[i], WHITE);
     }
 
     // (re)set variables
@@ -32,6 +28,7 @@ void Board::init()
     CHECK = false;
     INSUFFMAT = false;
     STALEMATE = false;
+    ENDGAME = false;
     specialMove = NOSPECIAL;
     assignArray(enPassantPos, -2, -2);             // all manipulations will stay out of bounds
     enPassantColor = -1;
@@ -851,10 +848,9 @@ bool Board::isDraw(){
         }
         else if (bIndex == 3){
             // king + 2 Knights
-            numToRowCol(bPieces[0], 0, row, row1, col, col1);
+            numToRowCol(bPieces[0], bPieces[1], row, row1, col, col1);
             p1 = board[row][col].getNameValue() == KNIGHT;
-            numToRowCol(bPieces[1], 0, row, row1, col, col1);
-            p2 = board[row][col].getNameValue() == KNIGHT;
+            p2 = board[row1][col1].getNameValue() == KNIGHT;
             numToRowCol(bPieces[2], 0, row, row1, col, col1);
             p3 = board[row][col].getNameValue() == KNIGHT;
             bInsuff = (p1 + p2 + p3 == 2);
@@ -871,10 +867,9 @@ bool Board::isDraw(){
         }
         else if (wIndex == 3){
             // king + 2 Knights
-            numToRowCol(wPieces[0], 0, row, row1, col, col1);
+            numToRowCol(wPieces[0], wPieces[1], row, row1, col, col1);
             p1 = board[row][col].getNameValue() == KNIGHT;
-            numToRowCol(wPieces[1], 0, row, row1, col, col1);
-            p2 = board[row][col].getNameValue() == KNIGHT;
+            p2 = board[row1][col1].getNameValue() == KNIGHT;
             numToRowCol(wPieces[2], 0, row, row1, col, col1);
             p3 = board[row][col].getNameValue() == KNIGHT;
             wInsuff = ((p1 + p2 + p3) == 2);
@@ -1216,7 +1211,7 @@ void Board::goBack(short int &start, short int &end, short int &special, short i
 
     // handle special cases
     if (specialmv == PROMOTION){
-        board[startRow][startCol] = ChessPiece(0, PAWN, board[startRow][startCol].getColor());
+        board[startRow][startCol] = ChessPiece(PAWN, board[startRow][startCol].getColor());
         board[startRow][startCol].setMoved(true);
     }
     else if (specialmv == BQCASTLE){
@@ -1242,12 +1237,14 @@ void Board::goBack(short int &start, short int &end, short int &special, short i
 
     toPlay = board[startRow][startCol].getColor();
     color = toPlay;
+    ENDGAME = false;
 
     if (board[startRow][startCol].getNameValue() == KING){
         // if the piece moved is a king update king pos
         if (color == BLACK) assignArray(bkPos, startRow, startCol);
         else assignArray(wkPos, startRow, startCol);
     }
+
 }
 
 void Board::goForward(short int &start, short int &end, short int &special, short int &promoPiece, short int &capturedPiece, short int &color){
@@ -1438,32 +1435,28 @@ bool Board::promote(short int pieceNameVal)
         moveList.setEnd();
         ChessPiece piece;
         bool valid = true;
-        short int queenVal = 90, knightVal = 30, rookVal = 50, bishopVal = 30, color = BLACK;
+        short int color = BLACK;
 
         if (promotionPos[0] == 0) {
             color = WHITE;
-            queenVal *= -1;
-            knightVal *= -1;
-            rookVal *= -1;
-            bishopVal *= -1;
         }
 
         switch (pieceNameVal) {
-        case 5:
-            piece = ChessPiece(queenVal, QUEEN, color);
-            break;
-        case 3:
-            piece = ChessPiece(knightVal, KNIGHT, color);
-            break;
-        case 2:
-            piece = ChessPiece(rookVal, ROOK, color);
-            break;
-        case 4:
-            piece = ChessPiece(bishopVal, BISHOP, color);
-            break;
-        default:
-            valid = false;
-            break;
+            case 5:
+                piece = ChessPiece(QUEEN, color);
+                break;
+            case 3:
+                piece = ChessPiece(KNIGHT, color);
+                break;
+            case 2:
+                piece = ChessPiece(ROOK, color);
+                break;
+            case 4:
+                piece = ChessPiece(BISHOP, color);
+                break;
+            default:
+                valid = false;
+                break;
         }
 
         if (valid) {
@@ -1494,17 +1487,143 @@ bool Board::inBounds(short int row, short int col) {
     return ((row >= 0) && (row < BOARDSIZE) && (col >= 0) && (col < BOARDSIZE));
 }
 
-short int Board::value()
+short int Board::value(ChessPiece cboard[8][8])
 {
     // sum up the value of the board
+    short int value=0, pos;
+    ChessPiece piece;
+    bool hasQueen = false;
+    short int bPieces[17], wPieces[17], bkpos, wkpos;
+    short int bIndex=0, wIndex=0;
+    short int row, col, row1, col1;
+    short int p1,p2,p3;
 
-    int val = 0;
-    for (int i = 0; i < BOARDSIZE; i++) {
-        for (int j = 0; j < BOARDSIZE; j++) {
-            val += board[i][j].getValue();
+    if (cboard == nullptr) cboard = board;
+
+    for (short int i=0; i<BOARDSIZE; i++){
+        for(short j=0; j<BOARDSIZE; j++){
+            piece = cboard[i][j];
+            pos = rowColToNum(i,j);
+
+            if (piece.getColor() == BLACK){
+                pos = rowColToNum(7-i,j);   // flip to use values correctly
+                bPieces[bIndex++] = pos;
+
+                switch (piece.getNameValue()){
+                    case 1:
+                        value -= pawnVals[pos];
+                        break;
+                    case 2:
+                        value -= rookVals[pos];
+                        break;
+                    case 3:
+                        value -= knightVals[pos];
+                        break;
+                    case 4:
+                        value -= bishopVals[pos];
+                        break;
+                    case 5:
+                        value -= queenVals[pos];
+                        hasQueen = true;
+                        break;
+                    case 6:
+                        bkpos = pos;
+                        break;
+                    default:
+                        break;
+                }
+            }
+            else if (piece.getColor() == WHITE){
+                wPieces[wIndex++] = pos;
+
+                switch (piece.getNameValue()){
+                    case 1:
+                        value += pawnVals[pos];
+                        break;
+                    case 2:
+                        value += rookVals[pos];
+                        break;
+                    case 3:
+                        value += knightVals[pos];
+                        break;
+                    case 4:
+                        value += bishopVals[pos];
+                        break;
+                    case 5:
+                        value += queenVals[pos];
+                        hasQueen = true;
+                        break;
+                    case 6:
+                        wkpos = pos;
+                        break;
+                    default:
+                        break;
+                }
+            }
+
         }
     }
-    return val;
+    bPieces[bIndex] = -1;
+    wPieces[wIndex] = -1;
+
+    // check for endgame
+    if (!ENDGAME){
+        if (!hasQueen) ENDGAME = true;  // no queens left
+        else if (wIndex == 1 || bIndex == 1) ENDGAME = true;    // only king left
+        else if (bIndex == 2){
+            // only king and queen for black
+            if (bPieces[0] == bkpos){
+                numToRowCol(bPieces[1], 0, row, row1, col, col1);
+                if (cboard[row][col].getNameValue() == QUEEN) ENDGAME = true;
+            }
+            else{
+                numToRowCol(bPieces[0], 0, row, row1, col, col1);
+                if (cboard[row][col].getNameValue() == QUEEN) ENDGAME = true;
+            }
+
+        }
+        else if (wIndex == 2){
+            // only king and queen for white
+            if (wPieces[0] == wkpos){
+                numToRowCol(wPieces[1], 0, row, row1, col, col1);
+                if (cboard[row][col].getNameValue() == QUEEN) ENDGAME = true;
+            }
+            else{
+                numToRowCol(wPieces[0], 0, row, row1, col, col1);
+                if (cboard[row][col].getNameValue() == QUEEN) ENDGAME = true;
+            }
+        }
+        else if (bIndex == 3){
+            // king + queen + 1 minor piece
+            numToRowCol(bPieces[0], bPieces[1], row, row1, col, col1);
+            p1 = cboard[row][col].getNameValue() == KNIGHT;
+            p2 = cboard[row1][col1].getNameValue() == KNIGHT;
+            numToRowCol(bPieces[2], 0, row, row1, col, col1);
+            p3 = cboard[row][col].getNameValue() == KNIGHT;
+            ENDGAME = ((p1 + p1 + p3) == 14) || ((p1 + p1 + p3) == 15);
+        }
+        else if (wIndex == 3){
+            // king + queen + 1 minor piece
+            numToRowCol(wPieces[0], bPieces[1], row, row1, col, col1);
+            p1 = cboard[row][col].getNameValue() == KNIGHT;
+            p2 = cboard[row1][col1].getNameValue() == KNIGHT;
+            numToRowCol(wPieces[2], 0, row, row1, col, col1);
+            p3 = cboard[row][col].getNameValue() == KNIGHT;
+            ENDGAME = ((p1 + p1 + p3) == 14) || ((p1 + p1 + p3) == 15);
+        }
+    }
+
+    // add king val
+    if (ENDGAME){
+        value -= kingValsEnd[bkpos];
+        value += kingValsEnd[wkpos];
+    }
+    else{
+        value -= kingVals[bkpos];
+        value += kingVals[wkpos];
+    }
+
+    return value;
 }
 
 void Board::switchToPlay()

@@ -3,7 +3,6 @@
 #include <QLayout>
 #include <Qt>
 #include <QSizePolicy>
-#include <QDebug>
 
 MainWindow::MainWindow(QWidget *parent): QMainWindow(parent)
 {
@@ -37,6 +36,10 @@ MainWindow::MainWindow(QWidget *parent): QMainWindow(parent)
     // initialize engine
     engine.init();
 
+    // get board value
+    short int value = engine.value(nullptr);
+    sidebar->showValue(value);
+
     //show layout
     QLayout *layout2 = (QLayout*) layout;
     window->setLayout(layout2);
@@ -49,9 +52,11 @@ void MainWindow::buttonPressed(int id){
     // handle a button being clicked
 
     QPushButton *btn2 = (QPushButton *) btnGroup.button(id);
-    short int special, pieceMoved, color;
+    short int special, pieceMoved, color, value;
     bool capture, check, checkmate;
     sidebar->hideError();
+    value = engine.value(nullptr);
+    sidebar->showValue(value);
 
 
     if (firstClick == -1){
@@ -93,11 +98,15 @@ void MainWindow::buttonPressed(int id){
         // move was valid in chess engine, so move pieces
         special = engine.getSpecialMove();
         engine.moveStats(pieceMoved, color, capture, check, checkmate);
+        // get board value
+        value = engine.value(nullptr);
+        sidebar->showValue(value);
         handleMove(btn1, btn2, special, firstClick, secondClick, color);
         if (special != 1){
             sidebar->addMove(pieceMoved, firstClick, secondClick, color, capture, check, checkmate, special, -1);
         }
         if (engine.gameOver()){
+            sidebar->hideValue();
             winner = engine.getWinner();
             reason = engine.getWinReason();
             sidebar->showGameOver(winner, reason);
@@ -111,14 +120,17 @@ void MainWindow::buttonPressed(int id){
         else{
             highlightButtons(chMoves, checkColor, false);
         }
+
     }
     else{
-        qDebug() <<  "invalid move!";
         short int err = engine.getErrorState();
-        qDebug() << "error code: " << err;
         if ((err != 13) && (err > 3)){
-            qDebug() << "sending error";
+            sidebar->hideValue();
             sidebar->showError(err);
+        }
+        else{
+            value = engine.value(nullptr);
+            sidebar->showValue(value);
         }
     }
 
@@ -130,7 +142,7 @@ void MainWindow::buttonPressed(int id){
 void MainWindow::promotion(int id){
     // promote piece
 
-    short int pieceMoved, color, winner, reason;
+    short int pieceMoved, color, winner, reason, value;
     bool capture, check, checkmate;
 
     if (engine.promote(id)){
@@ -165,9 +177,15 @@ void MainWindow::promotion(int id){
                 break;
         }
         if (engine.gameOver()){
+            sidebar->hideValue();
             winner = engine.getWinner();
             reason = engine.getWinReason();
             sidebar->showGameOver(winner, reason);
+        }
+        else{
+            // get board value
+            value = engine.value(nullptr);
+            sidebar->showValue(value);
         }
     }
 }
@@ -184,6 +202,8 @@ void MainWindow::newGame(){
     sidebar->getBackButton()->setEnabled(false);
     sidebar->getForwardButton()->setEnabled(false);
     sidebar->hideError();
+    short int value = engine.value(nullptr);
+    sidebar->showValue(value);
     for (short int i=0; i<BOARDSIZE*BOARDSIZE; i++){
         btn = (QPushButton *) btnGroup.button(i);
         restoreButtonColor(btn, i);
@@ -224,6 +244,10 @@ void MainWindow::undoMove(){
         engine.checkPositions(chMoves);
         highlightButtons(chMoves, checkColor, true);
     }
+
+    // get board value
+    short int value = engine.value(nullptr);
+    sidebar->showValue(value);
 
 }
 
@@ -295,9 +319,15 @@ void MainWindow::redoMove(){
 
     // check if this move was a game over move
     if (engine.gameOver()){
+        sidebar->hideValue();
         winner = engine.getWinner();
         reason = engine.getWinReason();
         sidebar->showGameOver(winner, reason);
+    }
+    else{
+        // get board value
+        short int value = engine.value(nullptr);
+        sidebar->showValue(value);
     }
 
     // check if forward and back buttons should be greyed out
@@ -319,6 +349,7 @@ void MainWindow::handleMove(QPushButton *btn1, QPushButton *btn2, short int spec
             break;
         case 1:
             // promotion
+            sidebar->hideValue();
             if (color == BLACK) sidebar->showPromotion(blackQueenIcon, blackKnightIcon, blackBishopIcon, blackRookIcon);
             else sidebar->showPromotion(whiteQueenIcon, whiteKnightIcon, whiteBishopIcon, whiteRookIcon);
             promotionOpen = true;

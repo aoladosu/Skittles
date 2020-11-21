@@ -2,8 +2,11 @@
 #include <QListView>
 #include <QSizePolicy>
 #include <QString>
+#include <Qt>
+#include <QFont>
 #include "Sidebar.h"
 
+#include <QDebug>
 
 Sidebar::Sidebar(QWidget *parent) : QWidget(parent)
 {
@@ -40,10 +43,14 @@ Sidebar::Sidebar(QWidget *parent) : QWidget(parent)
 
     // create layout elements
     title = new QLabel(QString("Skittles"), this);
+    title->setAlignment(Qt::AlignCenter);
+    QFont font = title->font();
+    font.setPointSize(16);
+    title->setFont(font);
 
     error = new QLabel(this);
     error->setSizePolicy(sPolicy);
-   error->setWordWrap(true);
+    error->setWordWrap(true);
 
     moveList = new QListWidget(this);
     moveList->setResizeMode(QListView::Adjust);
@@ -315,7 +322,6 @@ void Sidebar::showError(short int err){
         13-none,                          // no errors, everything handles well
      */
 
-
     //show error
     switch (err){
         case 0:
@@ -361,6 +367,9 @@ void Sidebar::showError(short int err){
             break;
     }
 
+    QFont font = error->font();
+    font.setPointSize(12);
+    error->setFont(font);
     error->show();
     result->addWidget(error, 0, 0);
 
@@ -397,6 +406,24 @@ void Sidebar::hideGameOver(){
     QLayout *result2 = (QLayout *) result;
     result2->removeWidget(gameOverBtn);
     gameOverBtn->hide();
+}
+
+void Sidebar::showValue(short int value){
+
+    error->setText("Board Value: " + QString::number(value/10.0));
+    error->setAlignment(Qt::AlignCenter);
+    QFont font = error->font();
+    font.setPointSize(16);
+    error->setFont(font);
+    error->show();
+    result->addWidget(error, 0, 0);
+}
+
+void Sidebar::hideValue(){
+    QLayout *result2 = (QLayout *) result;
+    result2->removeWidget(error);
+    error->hide();
+    error->setAlignment(Qt::AlignLeft);
 }
 
 QPushButton* Sidebar::getBackButton(){

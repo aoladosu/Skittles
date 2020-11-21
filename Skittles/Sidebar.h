@@ -51,6 +51,8 @@ public:
     void hideGameOver();
     void showError(short int err);
     void hideError();
+    void showValue(short int value);
+    void hideValue();
 
 signals:
 
