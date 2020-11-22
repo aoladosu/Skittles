@@ -65,6 +65,8 @@ private:
 
     // chess engine
     Engine engine;
+    bool engineTurn = false;
+    bool enginePlay = true;
 
     // board variables
     const short int BOARDSIZE = 8;

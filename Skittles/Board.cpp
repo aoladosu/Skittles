@@ -1333,7 +1333,7 @@ void Board::goForward(short int &start, short int &end, short int &special, shor
 
 }
 
-bool Board::genMovesForPiece(short int pos, short int moves[], short int cMoves[], short int aMoves[]){
+bool Board::genMovesForPiece(short int pos, short int moves[], short int cMoves[], short int aMoves[], bool extra){
     // return the moves that this piece can make
     // return true if it can move
 
@@ -1366,6 +1366,7 @@ bool Board::genMovesForPiece(short int pos, short int moves[], short int cMoves[
             break;
     }
 
+
     // copy moves that capture to cMoves
     while (moves[index] != -1){
         numToRowCol(moves[index], 0, row, row1, col, col1);
@@ -1374,21 +1375,291 @@ bool Board::genMovesForPiece(short int pos, short int moves[], short int cMoves[
     }
     cMoves[cIndex++] = -1;
 
-    // get list of pieces that attack this piece
-    short int rowList[17], colList[17], color;
-    numToRowCol(pos, 0, row, row1, col, col1);
-    color = board[row][col].getColor();
-    if (color == -1) color = toPlay;
-    isChecked(row, col, board, color, rowList, colList);
     index = 0;
-    while (rowList[index] != -1) {
-        aMoves[index] = rowColToNum(rowList[index], colList[index]);
-        index += 1;
+    if (extra){
+        // get list of pieces that attack this piece
+        short int rowList[17], colList[17], color;
+        numToRowCol(pos, 0, row, row1, col, col1);
+        color = board[row][col].getColor();
+        if (color == -1) color = toPlay;
+        isChecked(row, col, board, color, rowList, colList);
+        while (rowList[index] != -1) {
+            aMoves[index] = rowColToNum(rowList[index], colList[index]);
+            index += 1;
+        }
     }
     aMoves[index] = -1;
 
     ERROR = err;
     return canMove;
+
+}
+
+void Board::genMoves(short int moves[]){
+    // gen all possible moves  for the current player
+
+    short int cMoves[10], pMoves[35], aMoves[2];
+    short int index=0, pos;
+
+    for (short int i=0; i<BOARDSIZE; i++){
+        for (short int j=0; j<BOARDSIZE; j++){
+            if (board[i][j].getColor() == toPlay){
+                pos = rowColToNum(i,j);
+                genMovesForPiece(pos, pMoves, cMoves, aMoves, false);
+                moves[index++] = pos;
+                orderMoves(moves, pMoves, cMoves, index);
+                moves[index++] = -1;
+            }
+        }
+    }
+
+    moves[index++] = -1;
+    moves[index++] = -1;
+    moves[index] = -1;
+
+}
+
+void Board::getMove(short int &startPos, short int &endPos){
+
+    short int stateValue, start, end, index=0, eval;
+    short int moves[175];
+    short int s1, e1, sp1, p1, cp1, c1, color=toPlay;
+
+    if (MATE || DRAW){
+        // game over no move to generate
+        startPos = -1;
+        endPos = -1;
+    }
+
+    // black wants to minimize, white wants to maximize
+    if (color == BLACK) stateValue = 1000;
+    else stateValue = -1000;
+
+    // get a list of moves
+    genMoves(moves);
+
+    // iterate through all moves and get a value for each position
+    start = moves[index];
+    index++;
+    while (start != -1){
+
+        // get move from list
+        end = moves[index];
+        index++;
+        if (end == -1){
+            start = moves[index];
+            index++;
+            continue;
+        }
+        // move piece
+        forceMove(start, end);
+
+        // evaluate move, if a better move, pick it
+        if (color == BLACK){
+            eval = alphabeta(1, -1000, 1000, false);
+            goBack(s1,e1, sp1, p1, cp1, c1);
+            if (eval <= stateValue){
+                stateValue = eval;
+                startPos = start;
+                endPos = end;
+            }
+        }
+        else {
+            eval = alphabeta(1, -1000, 1000, true);
+            goBack(s1,e1, sp1, p1, cp1, c1);
+            if (eval >= stateValue){
+                stateValue = eval;
+                startPos = start;
+                endPos = end;
+            }
+        }
+
+    }
+
+}
+
+short int Board::alphabeta(short int depth, short int alpha, short int beta, bool maxPlayer){
+    // alpha beta search
+    // algorithm from wikipedia alpha beta pruning. https://en.wikipedia.org/wiki/Alpha%E2%80%93beta_pruning
+
+    /*
+    function alphabeta(node, depth, α, β, maximizingPlayer) is
+    if depth = 0 or node is a terminal node then
+        return the heuristic value of node
+    if maximizingPlayer then
+        value := −∞
+        for each child of node do
+            value := max(value, alphabeta(child, depth − 1, α, β, FALSE))
+            α := max(α, value)
+            if α ≥ β then
+                break (* β cutoff *)
+        return value
+    else
+        value := +∞
+        for each child of node do
+            value := min(value, alphabeta(child, depth − 1, α, β, TRUE))
+            β := min(β, value)
+            if β ≤ α then
+                break (* α cutoff *)
+        return value
+
+    */
+
+    short int stateValue, start, end, index=0;
+    short int moves[175];
+    short int s1, e1, sp1, p1, cp1, c1;
+    // terminal node or reached max search depth
+    if ((depth == MAXDEPTH) || MATE || DRAW) return value();
+
+    // promotion
+    if (specialMove == PROMOTION) promote(QUEEN);
+
+    // try to maximize score
+    if (maxPlayer){
+        stateValue = -1000;
+        genMoves(moves);
+        start = moves[index];
+        index++;
+        while (start != -1){
+            end = moves[index];
+            index++;
+            if (end == -1){
+                start = moves[index];
+                index++;
+                continue;
+            }
+            forceMove(start, end);
+            stateValue = qMax(stateValue, alphabeta(depth+1, alpha, beta, false));
+            goBack(s1,e1, sp1, p1, cp1, c1);
+            alpha = qMax(alpha, stateValue);
+            if (alpha >= beta) break;   // cutoff
+        }
+        return stateValue;
+    }
+
+    // try to minimize score
+    else{
+        stateValue = 1000;
+        genMoves(moves);
+        start = moves[index];
+        index++;
+        while (start != -1){
+            end = moves[index];
+            index++;
+            if (end == -1){
+                start = moves[index];
+                index++;
+                continue;
+            }
+            forceMove(start, end);
+            stateValue = qMin(stateValue, alphabeta(depth+1, alpha, beta, true));
+            goBack(s1,e1, sp1, p1, cp1, c1);
+            beta = qMin(beta, stateValue);
+            if (beta <= alpha) break;   // cutoff
+        }
+        return stateValue;
+    }
+}
+
+void Board::forceMove(short int start, short int end){
+    // function used to avoid rechecking for a valid move
+
+    specialMove = NOSPECIAL;
+    ChessPiece piece;
+    short int startRow, endRow, startCol, endCol;
+    numToRowCol(start, end, startRow, endRow, startCol, endCol);
+    piece = board[startRow][startCol];
+
+    // for king check
+    short int *currKing, *othKing;
+    if (toPlay == BLACK) {
+        currKing = bkPos;
+        othKing = wkPos;
+    }
+    else {
+        currKing = wkPos;
+        othKing = bkPos;
+    }
+
+    // set enpassant, castle, promotion special
+    if (piece.getNameValue() == PAWN){
+        if (qFabs(startRow - endRow) == 2){
+            // enpassant
+            enPassantColor = piece.getColor();
+            assignArray(enPassantPos,endRow,endCol);
+        }
+        if ((startCol != endCol) && (board[endRow][endCol].getNameValue() == EMPTY)){
+            specialMove = ENPASSANT;
+        }
+        if ((endRow == 0) || (endRow == (BOARDSIZE-1))){
+            // promotion
+            specialMove = PROMOTION;
+            assignArray(promotionPos, endRow, endCol);
+        }
+    }
+    else if (piece.getNameValue() == KING){
+        // castling cases
+        if ((startRow == 7) && (endCol == 6)) specialMove = WKCASTLE;
+        else if ((startRow == 7) && (endCol == 2)) specialMove = WQCASTLE;
+        else if ((startRow == 0) && (endCol == 6)) specialMove = BKCASTLE;
+        else if ((startRow == 0) && (endCol == 2)) specialMove = BQCASTLE;
+
+        // update king's position
+        currKing[0] = endRow;
+        currKing[1] = endCol;
+    }
+
+    movePiece(startRow, endRow, startCol, endCol);
+
+    // check if opposite king in check
+    short int oppColor = 1-toPlay, rowList[17], colList[17];
+    CHECK = isChecked(othKing[0], othKing[1], board, oppColor, rowList, colList);
+    if (CHECK){
+        MATE = isMate(othKing[0], othKing[1], board, rowList, colList);
+    }
+
+    // check for draw
+    DRAW = isDraw();
+
+    switchToPlay();
+    short int temp[2] = { -2,-2 };
+    if (!areEqual(enPassantPos,temp) && (enPassantColor != piece.getColor())) {
+        assignArray(enPassantPos,temp[0],temp[1]);
+        enPassantColor = -1;
+    }
+
+    // add move to movelist
+    startPos = start;
+    addMove(start, end);
+
+}
+
+void Board::orderMoves(short int moves[], short int pMoves[], short int cMoves[], short int &index){
+    // order moves so capture moves go first
+
+    short int cIndex = 0, pIndex = 0;
+    bool inCapture = false;
+
+    // copy capture moves
+    while(cMoves[cIndex] != -1){
+        moves[index++] = cMoves[cIndex];
+        cIndex+=1;
+    }
+
+    // copy other moves
+    cIndex = 0;
+    while (pMoves[pIndex] != -1){
+        while(!inCapture && (cMoves[cIndex] != -1)){
+            // check if moves are already in capture set
+            if (cMoves[cIndex++] == pMoves[pIndex]){
+                inCapture = true;
+            }
+        }
+        if(!inCapture) moves[index++] = pMoves[pIndex];
+        pIndex += 1;
+        inCapture = false;
+        cIndex = 0;
+    }
 
 }
 
@@ -1487,7 +1758,7 @@ bool Board::inBounds(short int row, short int col) {
     return ((row >= 0) && (row < BOARDSIZE) && (col >= 0) && (col < BOARDSIZE));
 }
 
-short int Board::value(ChessPiece cboard[8][8])
+short int Board::value()
 {
     // sum up the value of the board
     short int value=0, pos;
@@ -1498,11 +1769,15 @@ short int Board::value(ChessPiece cboard[8][8])
     short int row, col, row1, col1;
     short int p1,p2,p3;
 
-    if (cboard == nullptr) cboard = board;
+    if (DRAW) return 0;
+    if (MATE){
+        if (toPlay == BLACK) return 900;
+        return -900;
+    }
 
     for (short int i=0; i<BOARDSIZE; i++){
         for(short j=0; j<BOARDSIZE; j++){
-            piece = cboard[i][j];
+            piece = board[i][j];
             pos = rowColToNum(i,j);
 
             if (piece.getColor() == BLACK){
@@ -1574,11 +1849,11 @@ short int Board::value(ChessPiece cboard[8][8])
             // only king and queen for black
             if (bPieces[0] == bkpos){
                 numToRowCol(bPieces[1], 0, row, row1, col, col1);
-                if (cboard[row][col].getNameValue() == QUEEN) ENDGAME = true;
+                if (board[row][col].getNameValue() == QUEEN) ENDGAME = true;
             }
             else{
                 numToRowCol(bPieces[0], 0, row, row1, col, col1);
-                if (cboard[row][col].getNameValue() == QUEEN) ENDGAME = true;
+                if (board[row][col].getNameValue() == QUEEN) ENDGAME = true;
             }
 
         }
@@ -1586,29 +1861,29 @@ short int Board::value(ChessPiece cboard[8][8])
             // only king and queen for white
             if (wPieces[0] == wkpos){
                 numToRowCol(wPieces[1], 0, row, row1, col, col1);
-                if (cboard[row][col].getNameValue() == QUEEN) ENDGAME = true;
+                if (board[row][col].getNameValue() == QUEEN) ENDGAME = true;
             }
             else{
                 numToRowCol(wPieces[0], 0, row, row1, col, col1);
-                if (cboard[row][col].getNameValue() == QUEEN) ENDGAME = true;
+                if (board[row][col].getNameValue() == QUEEN) ENDGAME = true;
             }
         }
         else if (bIndex == 3){
             // king + queen + 1 minor piece
             numToRowCol(bPieces[0], bPieces[1], row, row1, col, col1);
-            p1 = cboard[row][col].getNameValue() == KNIGHT;
-            p2 = cboard[row1][col1].getNameValue() == KNIGHT;
+            p1 = board[row][col].getNameValue() == KNIGHT;
+            p2 = board[row1][col1].getNameValue() == KNIGHT;
             numToRowCol(bPieces[2], 0, row, row1, col, col1);
-            p3 = cboard[row][col].getNameValue() == KNIGHT;
+            p3 = board[row][col].getNameValue() == KNIGHT;
             ENDGAME = ((p1 + p1 + p3) == 14) || ((p1 + p1 + p3) == 15);
         }
         else if (wIndex == 3){
             // king + queen + 1 minor piece
             numToRowCol(wPieces[0], bPieces[1], row, row1, col, col1);
-            p1 = cboard[row][col].getNameValue() == KNIGHT;
-            p2 = cboard[row1][col1].getNameValue() == KNIGHT;
+            p1 = board[row][col].getNameValue() == KNIGHT;
+            p2 = board[row1][col1].getNameValue() == KNIGHT;
             numToRowCol(wPieces[2], 0, row, row1, col, col1);
-            p3 = cboard[row][col].getNameValue() == KNIGHT;
+            p3 = board[row][col].getNameValue() == KNIGHT;
             ENDGAME = ((p1 + p1 + p3) == 14) || ((p1 + p1 + p3) == 15);
         }
     }

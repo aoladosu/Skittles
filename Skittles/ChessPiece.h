@@ -7,7 +7,7 @@ class ChessPiece
 private:
     short int nameVal = 0;                  // chess piece's name as a value
     short int color = -1;					// colour of piece 0=WHITE,1=BLACK
-    bool moved = 0;                         // true if the piece has been moved before. ex: castling, pawn's first move
+    bool moved = false;                     // true if the piece has been moved before. ex: castling, pawn's first move
 
 public:
     ChessPiece();

@@ -21,8 +21,9 @@ public:
     bool isEnd();                                                       // check if there is a next move
     void checkPositions(short int pos[]);                               // get positions of check
     short int getErrorState();                                          // get reason for error
-    short int value(ChessPiece cboard[8][8] = nullptr);                 // get value of the board
-    bool genMovesForPiece(short int pos, short int moves[], short int cMoves[], short int aMoves[]);                                                // get moves for piece
+    short int value();                                                  // get value of the board
+    void getMove(short int &startPos, short int &endPos);               // get a move from the engine
+    bool genMovesForPiece(short int pos, short int moves[], short int cMoves[], short int aMoves[], bool extra);                                    // get moves for piece
     void goBack(short int &start, short int &end, short int &special, short int &promoPiece, short int &capturedPiece, short int &color);           // go back one move
     void goForward(short int &start, short int &end, short int &special, short int &promoPiece, short int &capturedPiece, short int &color);        // go forward one move
     void moveStats(short int &pieceMoved, short int &color, bool &capture, bool &check, bool &checkmate);                                           // get statistics about last move

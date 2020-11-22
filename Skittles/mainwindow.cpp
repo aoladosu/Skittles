@@ -37,7 +37,7 @@ MainWindow::MainWindow(QWidget *parent): QMainWindow(parent)
     engine.init();
 
     // get board value
-    short int value = engine.value(nullptr);
+    short int value = engine.value();
     sidebar->showValue(value);
 
     //show layout
@@ -52,10 +52,10 @@ void MainWindow::buttonPressed(int id){
     // handle a button being clicked
 
     QPushButton *btn2 = (QPushButton *) btnGroup.button(id);
-    short int special, pieceMoved, color, value;
+    short int special, pieceMoved, color, value, engineMove1, engineMove2;
     bool capture, check, checkmate;
     sidebar->hideError();
-    value = engine.value(nullptr);
+    value = engine.value();
     sidebar->showValue(value);
 
 
@@ -65,7 +65,7 @@ void MainWindow::buttonPressed(int id){
         QPalette pal = btn2->palette();
         pal.setColor(QPalette::Button, selectColor);
         btn2->setPalette(pal);
-        engine.genMovesForPiece(id, pMoves, cMoves, aMoves);
+        engine.genMovesForPiece(id, pMoves, cMoves, aMoves, true);
         highlightButtons(pMoves, pMoveColor, true);
         highlightButtons(aMoves, aMoveColor, true);
         highlightButtons(cMoves, cMoveColor, true);
@@ -99,7 +99,7 @@ void MainWindow::buttonPressed(int id){
         special = engine.getSpecialMove();
         engine.moveStats(pieceMoved, color, capture, check, checkmate);
         // get board value
-        value = engine.value(nullptr);
+        value = engine.value();
         sidebar->showValue(value);
         handleMove(btn1, btn2, special, firstClick, secondClick, color);
         if (special != 1){
@@ -121,6 +121,18 @@ void MainWindow::buttonPressed(int id){
             highlightButtons(chMoves, checkColor, false);
         }
 
+        if (enginePlay){
+            if(engineTurn){
+                engineTurn = false;
+            }
+            else{
+                engineTurn = true;
+                engine.getMove(engineMove1, engineMove2);
+                firstClick = engineMove1;
+                buttonPressed(engineMove2);
+            }
+        }
+
     }
     else{
         short int err = engine.getErrorState();
@@ -129,7 +141,7 @@ void MainWindow::buttonPressed(int id){
             sidebar->showError(err);
         }
         else{
-            value = engine.value(nullptr);
+            value = engine.value();
             sidebar->showValue(value);
         }
     }
@@ -184,7 +196,7 @@ void MainWindow::promotion(int id){
         }
         else{
             // get board value
-            value = engine.value(nullptr);
+            value = engine.value();
             sidebar->showValue(value);
         }
     }
@@ -202,7 +214,7 @@ void MainWindow::newGame(){
     sidebar->getBackButton()->setEnabled(false);
     sidebar->getForwardButton()->setEnabled(false);
     sidebar->hideError();
-    short int value = engine.value(nullptr);
+    short int value = engine.value();
     sidebar->showValue(value);
     for (short int i=0; i<BOARDSIZE*BOARDSIZE; i++){
         btn = (QPushButton *) btnGroup.button(i);
@@ -246,7 +258,7 @@ void MainWindow::undoMove(){
     }
 
     // get board value
-    short int value = engine.value(nullptr);
+    short int value = engine.value();
     sidebar->showValue(value);
 
 }
@@ -326,7 +338,7 @@ void MainWindow::redoMove(){
     }
     else{
         // get board value
-        short int value = engine.value(nullptr);
+        short int value = engine.value();
         sidebar->showValue(value);
     }
 

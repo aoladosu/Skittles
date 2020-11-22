@@ -141,11 +141,14 @@ private:
                                 -30,-30,  0,  0,  0,  0,-30,-30,
                                 -50,-30,-30,-30,-30,-30,-30,-50};
 
+    // alpha beta depth
+    short int MAXDEPTH = 4;
+
 public:
     Board();
     ~Board();
     void init();
-    short int value(ChessPiece cboard[8][8] = nullptr);
+    short int value();
     bool validate(short int start, short int end);
     void switchToPlay();
     short int getSpecial();
@@ -159,8 +162,9 @@ public:
     void goBack(short int &start, short int &end, short int &special, short int &promoPiece, short int &capturedPiece, short int &color);
     void goForward(short int &start, short int &end, short int &special, short int &promoPiece, short int &capturedPiece, short int &color);
     void moveStats(short int &pieceMoved, short int &color, bool &capture, bool &check, bool &checkmate);
-    bool genMovesForPiece(short int pos, short int moves[], short int cMoves[], short int aMoves[]);
+    bool genMovesForPiece(short int pos, short int moves[], short int cMoves[], short int aMoves[], bool extra);
     void checkPositions(short int pos[]);
+    void getMove(short int &startPos, short int &endPos);
 
 private:
     bool pawnMoveValid(ChessPiece pawn, short int startRow, short int endRow, short int startCol, short int endCol);
@@ -181,6 +185,10 @@ private:
     bool genRookMoves(short int row, short int col, short int moves[]);
     bool genQueenMoves(short int row, short int col, short int moves[]);
     bool genPawnMoves(short int row, short int col, short int moves[]);
+    void genMoves(short int moves[]);
+    void forceMove(short int start, short int end);
+    short int alphabeta(short int depth, short int alpha, short int beta, bool maxPlayer);
+    void orderMoves(short int moves[], short int pMoves[], short int cMoves[], short int &index);
     bool isPawnLos(short int row, short int col, ChessPiece cboard[8][8], short int color);
     bool numToRowCol(short int start, short int end, short int &startRow, short int &endRow, short int &startCol, short int &endcol);
     short int rowColToNum(short int row, short int col);

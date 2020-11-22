@@ -49,8 +49,12 @@ short int Engine::getErrorState(){
     return board.getErrorState();
 }
 
-short int Engine::value(ChessPiece cboard[8][8]){
-    return board.value(cboard);
+short int Engine::value(){
+    return board.value();
+}
+
+void Engine::getMove(short int &startPos, short int &endPos){
+    board.getMove(startPos, endPos);
 }
 
 void Engine::goBack(short int &start, short int &end, short int &special, short int &promoPiece, short int &capturedPiece, short int &color){
@@ -65,8 +69,8 @@ void Engine::moveStats(short int &pieceMoved, short int &color, bool &capture, b
     board.moveStats(pieceMoved, color, capture, check, checkmate);
 }
 
-bool Engine::genMovesForPiece(short int pos, short int moves[], short int cMoves[], short int aMoves[]){
-    return board.genMovesForPiece(pos, moves, cMoves, aMoves);
+bool Engine::genMovesForPiece(short int pos, short int moves[], short int cMoves[], short int aMoves[], bool extra){
+    return board.genMovesForPiece(pos, moves, cMoves, aMoves, extra);
 }
 
 void Engine::checkPositions(short int pos[]){
