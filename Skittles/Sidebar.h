@@ -9,6 +9,7 @@
 #include <QListWidget>
 #include <QButtonGroup>
 #include <QIcon>
+#include <QCheckBox>
 
 class Sidebar : public QWidget
 {
@@ -33,9 +34,22 @@ private:
     QPushButton *knight;
     QPushButton *bishop;
     QPushButton *rook;
+    QButtonGroup promoBtnGroup;
+
+    // settings and game over buttons
     QPushButton *gameOverBtn;
     QPushButton *settingsBtn;
-    QButtonGroup btnGroup;
+
+    // settings buttons and button groups
+    QButtonGroup depthBtnGroup;
+    QButtonGroup policyBtnGroup;
+    QButtonGroup colorBtnGroup;
+    QCheckBox *highlight, *agent;
+
+    QWidget *container;
+
+    // whether settings is open or not
+    bool settingsOpen = true;
 
     // private functions
     void createSettings();
@@ -47,7 +61,10 @@ public:
     QPushButton* getForwardButton();
     QButtonGroup* getPromotionBtnGroup();
     QPushButton* getGameOverButton();
-    QPushButton* getSettingsButton();
+    //QPushButton* getSettingsButton();
+    QPushButton* getDepthBtnGroup();
+    QPushButton* getPolicyBtnGroup();
+    QPushButton* getColorBtnGroup();
     void addMove(short int piece, short int start, short int end, short int color, bool capture, bool check, bool checkmate, short int special, short int promoPiece, short int value);
     void clearMovelist();
     void removeMove(short int color);
@@ -61,6 +78,9 @@ public:
     void hideSettings();
 
 signals:
+
+private slots:
+    void settingsClicked();
 
 };
 

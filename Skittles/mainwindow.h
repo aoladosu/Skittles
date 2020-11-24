@@ -83,8 +83,8 @@ private:
     // settings variables
     short int toPlay = WHITE;
     bool highlights = true;
-    short int engineColor = WHITE;
-    bool enginePlay = true;
+    short int engineColor = BLACK;
+    bool enginePlay = false;
 
     // private functions
     void buttonStartup();

@@ -6,8 +6,6 @@
 #include <QFont>
 #include "Sidebar.h"
 
-#include <QDebug>
-
 Sidebar::Sidebar(QWidget *parent) : QWidget(parent)
 {
 
@@ -32,13 +30,13 @@ Sidebar::Sidebar(QWidget *parent) : QWidget(parent)
     rook = new QPushButton("Rook", this);
     rook->setSizePolicy(sPolicy);
     rook->hide();
-    btnGroup.addButton(queen, 5);
-    btnGroup.addButton(knight, 3);
-    btnGroup.addButton(bishop, 4);
-    btnGroup.addButton(rook, 2);
+    promoBtnGroup.addButton(queen, 5);
+    promoBtnGroup.addButton(knight, 3);
+    promoBtnGroup.addButton(bishop, 4);
+    promoBtnGroup.addButton(rook, 2);
 
     // create game over button
-    gameOverBtn = new QPushButton("Start new game", this);
+    gameOverBtn = new QPushButton("Start a new game", this);
     gameOverBtn->setSizePolicy(sPolicy);
 
     // create settings button
@@ -50,7 +48,7 @@ Sidebar::Sidebar(QWidget *parent) : QWidget(parent)
     title = new QLabel(QString("Skittles"), this);
     title->setAlignment(Qt::AlignCenter);
     QFont font = title->font();
-    font.setPointSize(16);
+    font.setPointSize(20);
     title->setFont(font);
 
     // error code
@@ -92,6 +90,7 @@ Sidebar::Sidebar(QWidget *parent) : QWidget(parent)
 
     // create settings menu
     createSettings();
+    connect(settingsBtn, SIGNAL(clicked()), this, SLOT(settingsClicked()));
 
     // set layout
     QLayout *gridLayout2 = (QLayout *) gridLayout;
@@ -103,6 +102,90 @@ Sidebar::Sidebar(QWidget *parent) : QWidget(parent)
 
 void Sidebar::createSettings(){
     // add buttons to the settings
+
+    // put in settings in widget to get background
+    container = new QWidget(this);
+    container->setStyleSheet("background-color:white;");
+    settings = new QGridLayout(container);
+
+    QSizePolicy sPolicy = QSizePolicy();
+    sPolicy.setHorizontalPolicy(QSizePolicy::Minimum);
+    sPolicy.setVerticalPolicy(QSizePolicy::Minimum);
+
+    // add title
+    QLabel *settingsTitle = new QLabel(QString("Settings"), this);
+    settingsTitle->setAlignment(Qt::AlignCenter);
+    settingsTitle->setSizePolicy(sPolicy);
+    settings->addWidget(settingsTitle, 0,0);
+    QFont font = settingsTitle->font();
+    font.setPointSize(16);
+    settingsTitle->setFont(font);
+
+
+    // highlighting pieces check box
+    highlight = new QCheckBox("Highlight piece information", this);
+    settings->addWidget(highlight, 1,0);
+    highlight->setSizePolicy(sPolicy);
+
+    // play agent checkbox
+    agent = new QCheckBox("Play agent", this);
+    settings->addWidget(agent, 2,0);
+    agent->setSizePolicy(sPolicy);
+
+
+    // agent color cehck boxes
+    QCheckBox *checkbox = new QCheckBox("Agent plays as white", this);
+    settings->addWidget(checkbox, 3,0);
+    colorBtnGroup.addButton(checkbox,0);
+    checkbox->setSizePolicy(sPolicy);
+
+    checkbox = new QCheckBox("Agents plays as Black", this);
+    settings->addWidget(checkbox, 4,0);
+    colorBtnGroup.addButton(checkbox,1);
+    checkbox->setSizePolicy(sPolicy);
+
+    colorBtnGroup.setExclusive(true);
+
+
+    // policy check boxes
+    checkbox = new QCheckBox("Agent uses random policy", this);
+    settings->addWidget(checkbox, 5,0);
+    policyBtnGroup.addButton(checkbox,0);
+    checkbox->setSizePolicy(sPolicy);
+
+    checkbox = new QCheckBox("Agents uses Alpha-Beta policy", this);
+    settings->addWidget(checkbox, 6,0);
+    policyBtnGroup.addButton(checkbox,1);
+    checkbox->setSizePolicy(sPolicy);
+
+    policyBtnGroup.setExclusive(true);
+
+
+    // depth check boxes
+    checkbox = new QCheckBox("Alpha-Beta search depth of 1", this);
+    settings->addWidget(checkbox, 7,0);
+    depthBtnGroup.addButton(checkbox,1);
+    checkbox->setSizePolicy(sPolicy);
+
+    checkbox = new QCheckBox("Alpha-Beta search depth of 2", this);
+    settings->addWidget(checkbox, 8,0);
+    depthBtnGroup.addButton(checkbox,2);
+    checkbox->setSizePolicy(sPolicy);
+
+    checkbox = new QCheckBox("Alpha-Beta search depth of 3", this);
+    settings->addWidget(checkbox, 9,0);
+    depthBtnGroup.addButton(checkbox,3);
+    checkbox->setSizePolicy(sPolicy);
+
+    checkbox = new QCheckBox("Alpha-Beta search depth of 4", this);
+    settings->addWidget(checkbox, 10,0);
+    depthBtnGroup.addButton(checkbox,4);
+    checkbox->setSizePolicy(sPolicy);
+
+    depthBtnGroup.setExclusive(true);
+
+    showSettings();
+
 }
 
 void Sidebar::addMove(short int piece, short int start, short int end, short int color, bool capture, bool check, bool checkmate, short int special, short int promoPiece, short int value){
@@ -451,7 +534,7 @@ void Sidebar::hideGameOver(){
     // hide game overr
 
 
-    gameOverBtn->setText("Start new game");
+    gameOverBtn->setText("Start a new game");
 
     //QLayout *result2 = (QLayout *) result;
     //result2->removeWidget(gameOverBtn);
@@ -466,8 +549,24 @@ void Sidebar::showSettings(){
     gridLayout2->removeWidget(moveList);
     moveList->hide();
 
+    // show check boxes
+    QCheckBox *btn;
+    for (short int i=1; i<5; i++){
+        btn = (QCheckBox *) depthBtnGroup.button(i);
+        btn->show();
+    }
+    for (short int i=0; i<2; i++){
+        btn = (QCheckBox *) policyBtnGroup.button(i);
+        btn->show();
+        btn = (QCheckBox *) colorBtnGroup.button(i);
+        btn->show();
+    }
+    highlight->show();
+    agent->show();
+
     // add settings
-    gridLayout->addLayout((QLayout *)settings,1,0,5,0);
+    container->show();
+    gridLayout->addWidget(container,1,0,5,0);
     settingsBtn->setText("Close settings");
 }
 
@@ -476,12 +575,37 @@ void Sidebar::hideSettings(){
 
     // remove settings
     QLayout *gridLayout2 = (QLayout *) gridLayout;
-    gridLayout2->removeWidget((QWidget *) settings);
+    gridLayout2->removeWidget(container);
+    container->hide();
+
+    // hide check boxes
+    QCheckBox *btn;
+    for (short int i=1; i<5; i++){
+        btn = (QCheckBox *) depthBtnGroup.button(i);
+        btn->hide();
+    }
+    for (short int i=0; i<2; i++){
+        btn = (QCheckBox *) policyBtnGroup.button(i);
+        btn->hide();
+        btn = (QCheckBox *) colorBtnGroup.button(i);
+        btn->hide();
+    }
+    highlight->hide();
+    agent->hide();
 
     // add movelist
     gridLayout->addWidget(moveList,1,0,5,0);
     moveList->show();
     settingsBtn->setText("Open settings");
+}
+
+void Sidebar::settingsClicked(){
+    // open and close settings
+
+    if (settingsOpen) hideSettings();
+    else showSettings();
+
+    settingsOpen = !settingsOpen;
 }
 
 QPushButton* Sidebar::getBackButton(){
@@ -493,22 +617,17 @@ QPushButton* Sidebar::getForwardButton(){
 }
 
 QButtonGroup* Sidebar::getPromotionBtnGroup(){
-    return &btnGroup;
+    return &promoBtnGroup;
 }
 
 QPushButton* Sidebar::getGameOverButton(){
     return gameOverBtn;
 }
 
-QPushButton* Sidebar::getSettingsButton(){
-    return settingsBtn;
-}
-
 Sidebar::~Sidebar(){
     delete title;
     delete gameOverBtn;
     delete error;
-    delete settings;
     delete bottom;
     delete back;
     delete forward;
@@ -521,4 +640,21 @@ Sidebar::~Sidebar(){
     delete rook;
     delete gameOverBtn;
     delete settingsBtn;
+    delete settings->itemAtPosition(0,0);
+    delete settings;
+    delete container;
+
+    QCheckBox *btn;
+    for (short int i=1; i<5; i++){
+        btn = (QCheckBox *) depthBtnGroup.button(i);
+        delete btn;
+    }
+
+    for (short int i=0; i<2; i++){
+        btn = (QCheckBox *) policyBtnGroup.button(i);
+        delete btn;
+        btn = (QCheckBox *) colorBtnGroup.button(i);
+        delete btn;
+    }
+
 }
