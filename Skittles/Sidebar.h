@@ -19,7 +19,7 @@ private:
 
     // variables for layouts in sidebar
     QGridLayout *gridLayout;
-    QLabel *title;
+    QPushButton *title;
     QLabel *error;
     QGridLayout *result;
     QGridLayout *settings;
@@ -45,13 +45,23 @@ private:
     QButtonGroup policyBtnGroup;
     QButtonGroup colorBtnGroup;
     QCheckBox *highlight, *agent;
-    QWidget *container;
+    QWidget *settingsContainer;
+    QWidget *instructContainer;
+    QLabel *instructions;
 
     // whether settings is open or not
-    bool settingsOpen = true;
+    bool settingsOpen = false;
+    bool titleOpen = false;
 
     // private functions
     void createSettings();
+    void createTitle();
+    void showSettings();
+    void hideSettings();
+    void showMoveList();
+    void hideMoveList();
+    void showTitle();
+    void hideTitle();
 
 public:
     explicit Sidebar(QWidget *parent = nullptr);
@@ -74,13 +84,12 @@ public:
     void hideGameOver();
     void showError(short int err);
     void hideError();
-    void showSettings();
-    void hideSettings();
 
 signals:
 
 private slots:
     void settingsClicked();
+    void titleClicked();
 
 };
 

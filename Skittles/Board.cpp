@@ -128,13 +128,12 @@ bool Board::validate(short int start, short int end)
 
         // check if opposite king is in checkmate
         CHECK = isChecked(othKing[0], othKing[1], board, oppColor, rowList, colList);
-        if (CHECK){
-            MATE = isMate(othKing[0], othKing[1], board, rowList, colList);
-        }
-
 
         // check if game is a draw
         DRAW = isDraw();
+
+        // check if in check mate
+        MATE = CHECK && STALEMATE;
 
         // update kings' positions
         if (piece.getNameValue() == KING) {
@@ -1664,12 +1663,12 @@ void Board::forceMove(short int start, short int end){
     // check if opposite king in check
     short int oppColor = 1-toPlay, rowList[17], colList[17];
     CHECK = isChecked(othKing[0], othKing[1], board, oppColor, rowList, colList);
-    if (CHECK){
-        MATE = isMate(othKing[0], othKing[1], board, rowList, colList);
-    }
 
     // check for draw
     DRAW = isDraw();
+
+    // check if in check mate
+    MATE = CHECK && STALEMATE;
 
     switchToPlay();
     short int temp[2] = { -2,-2 };

@@ -45,11 +45,11 @@ Sidebar::Sidebar(QWidget *parent) : QWidget(parent)
 
     // create layout elements
     // title
-    title = new QLabel(QString("Skittles"), this);
-    title->setAlignment(Qt::AlignCenter);
+    title = new QPushButton("Skittles", this);
     QFont font = title->font();
     font.setPointSize(20);
     title->setFont(font);
+    createTitle();
 
     // error code
     error = new QLabel(this);
@@ -91,6 +91,8 @@ Sidebar::Sidebar(QWidget *parent) : QWidget(parent)
     // create settings menu
     createSettings();
     connect(settingsBtn, SIGNAL(clicked()), this, SLOT(settingsClicked()));
+    connect(title, SIGNAL(clicked()), this, SLOT(titleClicked()));
+    titleClicked();
 
     // set layout
     QLayout *gridLayout2 = (QLayout *) gridLayout;
@@ -104,9 +106,9 @@ void Sidebar::createSettings(){
     // add buttons to the settings
 
     // put in settings in widget to get background
-    container = new QWidget(this);
-    container->setStyleSheet("background-color:white;");
-    settings = new QGridLayout(container);
+    settingsContainer = new QWidget(this);
+    settingsContainer->setStyleSheet("background-color:white;");
+    settings = new QGridLayout(settingsContainer);
 
     QSizePolicy sPolicy = QSizePolicy();
     sPolicy.setHorizontalPolicy(QSizePolicy::Minimum);
@@ -188,7 +190,38 @@ void Sidebar::createSettings(){
 
     depthBtnGroup.setExclusive(true);
 
-    showSettings();
+}
+
+void Sidebar::createTitle(){
+    // create overview/instructions
+
+    QSizePolicy sPolicy = QSizePolicy();
+    sPolicy.setHorizontalPolicy(QSizePolicy::Minimum);
+    sPolicy.setVerticalPolicy(QSizePolicy::Minimum);
+
+    instructContainer = new QWidget(this);
+    instructContainer->setStyleSheet("background-color:white;");
+    instructions = new QLabel(instructContainer);
+    instructions->setSizePolicy(sPolicy);
+    instructContainer->setSizePolicy(sPolicy);
+    QFont font = instructions->font();
+    font.setPointSize(12);
+    instructions->setFont(font);
+    instructions->setWordWrap(true);
+    QString string = "Welcome to Skittles!\n\n"
+                     "Information:\n"
+                     "Click 'Start a new game' at the bottom To start a new game. "
+                     "Click 'Open settings' to customize board highlighting and agent behaviour. "
+                     "To close this help screen, click on 'Skittles' at the top. Click on it again to return here.\n\n"
+                     "How to Play:\n"
+                     "The goal of chess is the put the opponent's king in checkmate. Checkmate, is when the king has no moves to avoid capture. "
+                     "Starting with white, 2 players alternate turns in order to reach checkmate. Each piece type has a specific move set (blue). "
+                     "Certain moves allow you to capture other pieces (red). But be careful, as other pieces can capture yours (yellow). "
+                     "During play you may encounter check (orange) which you must get out of, or draw where neigther player wins. "
+                     "Inside the movelist, the value of the board is printed. A negative value, means black is in a better position generally, while positive favours white. "
+                     "Use the forward and back buttons below to modify your moves and see if there are better moves available.";
+
+    instructions->setText(string);
 
 }
 
@@ -535,7 +568,7 @@ void Sidebar::showGameOver(short int winner, short int reason){
 }
 
 void Sidebar::hideGameOver(){
-    // hide game overr
+    // hide game over
 
 
     gameOverBtn->setText("Start a new game");
@@ -547,11 +580,6 @@ void Sidebar::hideGameOver(){
 
 void Sidebar::showSettings(){
     // show settings menu
-
-    // remove movelist
-    QLayout *gridLayout2 = (QLayout *) result;
-    gridLayout2->removeWidget(moveList);
-    moveList->hide();
 
     // show check boxes
     QCheckBox *btn;
@@ -568,9 +596,9 @@ void Sidebar::showSettings(){
     highlight->show();
     agent->show();
 
-    // add settings
-    container->show();
-    gridLayout->addWidget(container,1,0,5,0);
+    // add settings to sidebar
+    settingsContainer->show();
+    gridLayout->addWidget(settingsContainer,1,0,5,0);
     settingsBtn->setText("Close settings");
 }
 
@@ -579,8 +607,8 @@ void Sidebar::hideSettings(){
 
     // remove settings
     QLayout *gridLayout2 = (QLayout *) gridLayout;
-    gridLayout2->removeWidget(container);
-    container->hide();
+    gridLayout2->removeWidget(settingsContainer);
+    settingsContainer->hide();
 
     // hide check boxes
     QCheckBox *btn;
@@ -596,20 +624,76 @@ void Sidebar::hideSettings(){
     }
     highlight->hide();
     agent->hide();
+    settingsBtn->setText("Open settings");
+}
 
-    // add movelist
+void Sidebar::showMoveList(){
+    // show move list
+
+    // add movelist to sidebar
     gridLayout->addWidget(moveList,1,0,5,0);
     moveList->show();
     settingsBtn->setText("Open settings");
 }
 
+void Sidebar::hideMoveList(){
+    // hide movelist
+    QLayout *gridLayout2 = (QLayout *) result;
+    gridLayout2->removeWidget(moveList);
+    moveList->hide();
+}
+
+void Sidebar::showTitle(){
+    // show title
+
+    // add title to sidebar
+    gridLayout->addWidget(instructContainer,1,0,5,0);
+    instructContainer->show();
+    instructions->show();
+    settingsBtn->setText("Open settings");
+}
+
+void Sidebar::hideTitle(){
+    // hide title
+    QLayout *gridLayout2 = (QLayout *) result;
+    gridLayout2->removeWidget(instructContainer);
+    instructContainer->hide();
+    instructions->hide();
+}
+
 void Sidebar::settingsClicked(){
     // open and close settings
 
-    if (settingsOpen) hideSettings();
-    else showSettings();
+    if (settingsOpen){
+        hideSettings();
+        showMoveList();
+    }
+    else{
+        hideMoveList();
+        hideTitle();
+        showSettings();
+        titleOpen = false;
+    }
 
     settingsOpen = !settingsOpen;
+}
+
+void Sidebar::titleClicked(){
+    // show overview/ instructions
+
+    if (titleOpen){
+        hideTitle();
+        showMoveList();
+    }
+    else{
+        hideMoveList();
+        hideSettings();
+        showTitle();
+        settingsOpen = false;
+    }
+
+    titleOpen = !titleOpen;
+
 }
 
 QPushButton* Sidebar::getBackButton(){
@@ -666,7 +750,9 @@ Sidebar::~Sidebar(){
     delete settingsBtn;
     delete settings->itemAtPosition(0,0);
     delete settings;
-    delete container;
+    delete settingsContainer;
+    delete instructContainer;
+    delete instructions;
 
     QCheckBox *btn;
     for (short int i=1; i<5; i++){
