@@ -45,7 +45,6 @@ private:
     QButtonGroup policyBtnGroup;
     QButtonGroup colorBtnGroup;
     QCheckBox *highlight, *agent;
-
     QWidget *container;
 
     // whether settings is open or not
@@ -59,12 +58,13 @@ public:
     ~Sidebar();
     QPushButton* getBackButton();
     QPushButton* getForwardButton();
-    QButtonGroup* getPromotionBtnGroup();
     QPushButton* getGameOverButton();
-    //QPushButton* getSettingsButton();
-    QPushButton* getDepthBtnGroup();
-    QPushButton* getPolicyBtnGroup();
-    QPushButton* getColorBtnGroup();
+    QCheckBox* getHighlightButton();
+    QCheckBox* getAgentButton();
+    QButtonGroup* getPromotionBtnGroup();
+    QButtonGroup* getDepthBtnGroup();
+    QButtonGroup* getPolicyBtnGroup();
+    QButtonGroup* getColorBtnGroup();
     void addMove(short int piece, short int start, short int end, short int color, bool capture, bool check, bool checkmate, short int special, short int promoPiece, short int value);
     void clearMovelist();
     void removeMove(short int color);

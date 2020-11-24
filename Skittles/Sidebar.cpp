@@ -124,22 +124,24 @@ void Sidebar::createSettings(){
 
     // highlighting pieces check box
     highlight = new QCheckBox("Highlight piece information", this);
+    highlight->setChecked(true);
     settings->addWidget(highlight, 1,0);
     highlight->setSizePolicy(sPolicy);
 
     // play agent checkbox
-    agent = new QCheckBox("Play agent", this);
+    agent = new QCheckBox("Play against agent", this);
     settings->addWidget(agent, 2,0);
     agent->setSizePolicy(sPolicy);
 
 
-    // agent color cehck boxes
+    // agent color check boxes
     QCheckBox *checkbox = new QCheckBox("Agent plays as white", this);
     settings->addWidget(checkbox, 3,0);
     colorBtnGroup.addButton(checkbox,0);
     checkbox->setSizePolicy(sPolicy);
 
     checkbox = new QCheckBox("Agents plays as Black", this);
+    checkbox->setChecked(true);
     settings->addWidget(checkbox, 4,0);
     colorBtnGroup.addButton(checkbox,1);
     checkbox->setSizePolicy(sPolicy);
@@ -149,11 +151,12 @@ void Sidebar::createSettings(){
 
     // policy check boxes
     checkbox = new QCheckBox("Agent uses random policy", this);
+    checkbox->setChecked(true);
     settings->addWidget(checkbox, 5,0);
     policyBtnGroup.addButton(checkbox,0);
     checkbox->setSizePolicy(sPolicy);
 
-    checkbox = new QCheckBox("Agents uses Alpha-Beta policy", this);
+    checkbox = new QCheckBox("Agent uses Alpha-Beta policy", this);
     settings->addWidget(checkbox, 6,0);
     policyBtnGroup.addButton(checkbox,1);
     checkbox->setSizePolicy(sPolicy);
@@ -163,6 +166,7 @@ void Sidebar::createSettings(){
 
     // depth check boxes
     checkbox = new QCheckBox("Alpha-Beta search depth of 1", this);
+    checkbox->setChecked(true);
     settings->addWidget(checkbox, 7,0);
     depthBtnGroup.addButton(checkbox,1);
     checkbox->setSizePolicy(sPolicy);
@@ -622,6 +626,26 @@ QButtonGroup* Sidebar::getPromotionBtnGroup(){
 
 QPushButton* Sidebar::getGameOverButton(){
     return gameOverBtn;
+}
+
+QCheckBox* Sidebar::getHighlightButton(){
+    return highlight;
+}
+
+QCheckBox* Sidebar::getAgentButton(){
+    return agent;
+}
+
+QButtonGroup* Sidebar::getDepthBtnGroup(){
+    return &depthBtnGroup;
+}
+
+QButtonGroup* Sidebar::getPolicyBtnGroup(){
+    return &policyBtnGroup;
+}
+
+QButtonGroup* Sidebar::getColorBtnGroup(){
+    return &colorBtnGroup;
 }
 
 Sidebar::~Sidebar(){

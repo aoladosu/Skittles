@@ -143,7 +143,7 @@ private:
                                 -50,-30,-30,-30,-30,-30,-30,-50};
 
     // alpha beta depth
-    short int MAXDEPTH = 4;
+    short int MAXDEPTH = 1;
     bool ALPHABETA = false;        // false is random, true is alpha beta
     short int seed;
     QRandomGenerator generator;

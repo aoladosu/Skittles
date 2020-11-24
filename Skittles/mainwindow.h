@@ -110,5 +110,10 @@ private slots:
     void redoMove();
     void promotion(int id);
     void newGame();
+    void highlightButtons(bool checked);
+    void playAgent(bool checked);
+    void colorAgent(int id, bool checked);
+    void policyAgent(int id, bool checked);
+    void depthAgent(int id, bool checked);
 };
 

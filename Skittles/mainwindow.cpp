@@ -30,6 +30,11 @@ MainWindow::MainWindow(QWidget *parent): QMainWindow(parent)
     connect(forward, SIGNAL(clicked()), this, SLOT(redoMove()));
     connect(sidebar->getPromotionBtnGroup(), SIGNAL(idClicked(int)), this, SLOT(promotion(int)));
     connect(sidebar->getGameOverButton(), SIGNAL(clicked()), this, SLOT(newGame()));
+    connect(sidebar->getHighlightButton(), SIGNAL(toggled(bool)), this, SLOT(highlightButtons(bool)));
+    connect(sidebar->getAgentButton(), SIGNAL(toggled(bool)), this, SLOT(playAgent(bool)));
+    connect(sidebar->getColorBtnGroup(), SIGNAL(idToggled(int, bool)), this, SLOT(colorAgent(int, bool)));
+    connect(sidebar->getPolicyBtnGroup(), SIGNAL(idToggled(int, bool)), this, SLOT(policyAgent(int, bool)));
+    connect(sidebar->getDepthBtnGroup(), SIGNAL(idToggled(int, bool)), this, SLOT(depthAgent(int, bool)));
 
     addLabels();
 
@@ -203,7 +208,6 @@ void MainWindow::newGame(){
     // if engine goes first
     if (enginePlay && (engineColor == toPlay)){
         short int engineMove1, engineMove2;
-        toPlay = 1 - toPlay;
         engine.getMove(engineMove1, engineMove2);
         firstClick = engineMove1;
         buttonPressed(engineMove2);
@@ -476,6 +480,33 @@ void MainWindow::handleUndoMove(short int start, short int end, short int specia
             break;
     }
 
+}
+
+void MainWindow::highlightButtons(bool checked){
+    // set whether buttons should be highlighted or not
+    highlights = checked;
+}
+
+void MainWindow::playAgent(bool checked){
+    // set whether agent should play or not
+    enginePlay = checked;
+}
+
+void MainWindow::colorAgent(int id, bool checked){
+    // set agent color
+
+    if (checked) engineColor = (short int) id;
+
+}
+
+void MainWindow::policyAgent(int id, bool checked){
+    // set agent's policy
+    if (checked) engine.setAlphaBeta((bool)id);
+}
+
+void MainWindow::depthAgent(int id, bool checked){
+    // set depth of alpha beta search
+    if (checked) engine.setDepth((short int)id);
 }
 
 void MainWindow::highlightButtons(short int btnList[], QColor color, bool highlight){
