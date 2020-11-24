@@ -65,8 +65,6 @@ private:
 
     // chess engine
     Engine engine;
-    bool engineTurn = false;
-    bool enginePlay = true;
 
     // board variables
     const short int BOARDSIZE = 8;
@@ -81,6 +79,12 @@ private:
 
     // undo redo variables
     short int oldSpecial= -1;
+
+    // settings variables
+    short int toPlay = WHITE;
+    bool highlights = true;
+    short int engineColor = WHITE;
+    bool enginePlay = true;
 
     // private functions
     void buttonStartup();

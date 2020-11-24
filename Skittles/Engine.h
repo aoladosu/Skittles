@@ -23,6 +23,8 @@ public:
     short int getErrorState();                                          // get reason for error
     short int value();                                                  // get value of the board
     void getMove(short int &startPos, short int &endPos);               // get a move from the engine
+    void setAlphaBeta(bool pol);                                        // set using alpha beta or not
+    void setDepth(short int depth);                                     // set search depth
     bool genMovesForPiece(short int pos, short int moves[], short int cMoves[], short int aMoves[], bool extra);                                    // get moves for piece
     void goBack(short int &start, short int &end, short int &special, short int &promoPiece, short int &capturedPiece, short int &color);           // go back one move
     void goForward(short int &start, short int &end, short int &special, short int &promoPiece, short int &capturedPiece, short int &color);        // go forward one move

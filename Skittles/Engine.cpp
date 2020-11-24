@@ -53,6 +53,14 @@ short int Engine::value(){
     return board.value();
 }
 
+void Engine::setAlphaBeta(bool pol){
+    board.setAlphaBeta(pol);
+}
+
+void Engine::setDepth(short int depth){
+    board.setDepth(depth);
+}
+
 void Engine::getMove(short int &startPos, short int &endPos){
     board.getMove(startPos, endPos);
 }

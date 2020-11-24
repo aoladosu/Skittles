@@ -21,6 +21,7 @@ private:
     QLabel *title;
     QLabel *error;
     QGridLayout *result;
+    QGridLayout *settings;
     QListWidget *moveList;
     QHBoxLayout *bottom;
     QPushButton *back;
@@ -33,7 +34,11 @@ private:
     QPushButton *bishop;
     QPushButton *rook;
     QPushButton *gameOverBtn;
+    QPushButton *settingsBtn;
     QButtonGroup btnGroup;
+
+    // private functions
+    void createSettings();
 
 public:
     explicit Sidebar(QWidget *parent = nullptr);
@@ -42,7 +47,8 @@ public:
     QPushButton* getForwardButton();
     QButtonGroup* getPromotionBtnGroup();
     QPushButton* getGameOverButton();
-    void addMove(short int piece, short int start, short int end, short int color, bool capture, bool check, bool checkmate, short int special, short int promoPiece);
+    QPushButton* getSettingsButton();
+    void addMove(short int piece, short int start, short int end, short int color, bool capture, bool check, bool checkmate, short int special, short int promoPiece, short int value);
     void clearMovelist();
     void removeMove(short int color);
     void showPromotion(QIcon queenIcon, QIcon knightIcon, QIcon bishopIcon, QIcon rookIcon);
@@ -51,8 +57,8 @@ public:
     void hideGameOver();
     void showError(short int err);
     void hideError();
-    void showValue(short int value);
-    void hideValue();
+    void showSettings();
+    void hideSettings();
 
 signals:
 

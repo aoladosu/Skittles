@@ -38,20 +38,27 @@ Sidebar::Sidebar(QWidget *parent) : QWidget(parent)
     btnGroup.addButton(rook, 2);
 
     // create game over button
-    gameOverBtn = new QPushButton(this);
+    gameOverBtn = new QPushButton("Start new game", this);
     gameOverBtn->setSizePolicy(sPolicy);
 
+    // create settings button
+    settingsBtn = new QPushButton("Open settings", this);
+    settingsBtn->setSizePolicy(sPolicy);
+
     // create layout elements
+    // title
     title = new QLabel(QString("Skittles"), this);
     title->setAlignment(Qt::AlignCenter);
     QFont font = title->font();
     font.setPointSize(16);
     title->setFont(font);
 
+    // error code
     error = new QLabel(this);
     error->setSizePolicy(sPolicy);
     error->setWordWrap(true);
 
+    // move list
     moveList = new QListWidget(this);
     moveList->setResizeMode(QListView::Adjust);
     moveList->setViewMode(QListView::ListMode);
@@ -59,10 +66,15 @@ Sidebar::Sidebar(QWidget *parent) : QWidget(parent)
     moveList->setAlternatingRowColors(true);
     moveList->setSizeAdjustPolicy(QAbstractScrollArea::AdjustToContents);
     moveList->setSizePolicy(sPolicy);
+    QString string = "#   Color    Move      Value";
+    moveList->addItem(string);
 
+    // game over and settings button
     result = new QGridLayout(this);
-    result->addWidget(gameOverBtn);
+    result->addWidget(gameOverBtn, 0, 0);
+    result->addWidget(settingsBtn, 1, 0);
 
+    // forward and back button
     bottom = new QHBoxLayout(this);
     QIcon backIcon = QIcon(":/buttonImages/back_arrow");
     QIcon forwardIcon = QIcon(":/buttonImages/forward_arrow");
@@ -78,16 +90,22 @@ Sidebar::Sidebar(QWidget *parent) : QWidget(parent)
     gridLayout->addLayout((QLayout *) result, 6, 0, 1, 1);
     gridLayout->addLayout((QLayout *) bottom, 7, 0, 1, 1);
 
+    // create settings menu
+    createSettings();
+
     // set layout
     QLayout *gridLayout2 = (QLayout *) gridLayout;
     gridLayout2->setContentsMargins(10,10,10,10);
     this->setLayout((QLayout *) gridLayout);
     this->show();
-    hideGameOver();
 
 }
 
-void Sidebar::addMove(short int piece, short int start, short int end, short int color, bool capture, bool check, bool checkmate, short int special, short int promoPiece){
+void Sidebar::createSettings(){
+    // add buttons to the settings
+}
+
+void Sidebar::addMove(short int piece, short int start, short int end, short int color, bool capture, bool check, bool checkmate, short int special, short int promoPiece, short int value){
     // add move to move list
 
     QString string = "";
@@ -238,11 +256,11 @@ void Sidebar::addMove(short int piece, short int start, short int end, short int
 
     if (color == 1){
         // black
-        string = QString::number(moveNum) + ".  Black     " +  string;
+        string = QString::number(moveNum) + ".  Black     " +  string + "        " + QString::number(value/10.0);
     }
     else{
         moveNum += 1;
-        string = QString::number(moveNum) + ".  White    " +  string;
+        string = QString::number(moveNum) + ".  White    " +  string + "        " + QString::number(value/10.0);
     }
 
     moveList->addItem(string);
@@ -264,12 +282,21 @@ void Sidebar::clearMovelist(){
     // clear movelist
 
     moveList->clear();
+    QString string = "#   Color    Move      Value";
+    moveList->addItem(string);
     moveNum = 0;
 
 }
 
 void Sidebar::showPromotion(QIcon queenIcon, QIcon knightIcon, QIcon bishopIcon, QIcon rookIcon){
     // add promotion options to sidebar
+
+    // remove defaults
+    QLayout *result2 = (QLayout *) result;
+    result2->removeWidget(gameOverBtn);
+    result2->removeWidget(settingsBtn);
+    settingsBtn->hide();
+    gameOverBtn->hide();
 
     queen->setIcon(queenIcon);
     knight->setIcon(knightIcon);
@@ -301,6 +328,12 @@ void Sidebar::hidePromotion(){
     knight->hide();
     bishop->hide();
     rook->hide();
+
+    // put back defaults
+    result->addWidget(gameOverBtn, 0, 0);
+    result->addWidget(settingsBtn, 1, 0);
+    settingsBtn->show();
+    gameOverBtn->show();
 }
 
 void Sidebar::showError(short int err){
@@ -321,6 +354,14 @@ void Sidebar::showError(short int err){
         12-badMovement,                  // piece not moved correctly
         13-none,                          // no errors, everything handles well
      */
+
+    // remove defaults
+    QLayout *result2 = (QLayout *) result;
+    result2->removeWidget(gameOverBtn);
+    result2->removeWidget(settingsBtn);
+    settingsBtn->hide();
+    gameOverBtn->hide();
+
 
     //show error
     switch (err){
@@ -380,6 +421,12 @@ void Sidebar::hideError(){
     QLayout *result2 = (QLayout *) result;
     result2->removeWidget(error);
     error->hide();
+
+    // put back defaults
+    result->addWidget(gameOverBtn, 0, 0);
+    result->addWidget(settingsBtn, 1, 0);
+    settingsBtn->show();
+    gameOverBtn->show();
 }
 
 void Sidebar::showGameOver(short int winner, short int reason){
@@ -396,34 +443,45 @@ void Sidebar::showGameOver(short int winner, short int reason){
     else{
         gameOverBtn->setText("Draw - Insufficient Material!\n\n1/2 - 1/2\n(Click for new game)");
     }
-    gameOverBtn->show();
-    result->addWidget(gameOverBtn, 0, 0);
+    //gameOverBtn->show();
+    //result->addWidget(gameOverBtn, 0, 0);
 }
 
 void Sidebar::hideGameOver(){
     // hide game overr
 
-    QLayout *result2 = (QLayout *) result;
-    result2->removeWidget(gameOverBtn);
-    gameOverBtn->hide();
+
+    gameOverBtn->setText("Start new game");
+
+    //QLayout *result2 = (QLayout *) result;
+    //result2->removeWidget(gameOverBtn);
+    //gameOverBtn->hide();
 }
 
-void Sidebar::showValue(short int value){
+void Sidebar::showSettings(){
+    // show settings menu
 
-    error->setText("Board Value: " + QString::number(value/10.0));
-    error->setAlignment(Qt::AlignCenter);
-    QFont font = error->font();
-    font.setPointSize(16);
-    error->setFont(font);
-    error->show();
-    result->addWidget(error, 0, 0);
+    // remove movelist
+    QLayout *gridLayout2 = (QLayout *) result;
+    gridLayout2->removeWidget(moveList);
+    moveList->hide();
+
+    // add settings
+    gridLayout->addLayout((QLayout *)settings,1,0,5,0);
+    settingsBtn->setText("Close settings");
 }
 
-void Sidebar::hideValue(){
-    QLayout *result2 = (QLayout *) result;
-    result2->removeWidget(error);
-    error->hide();
-    error->setAlignment(Qt::AlignLeft);
+void Sidebar::hideSettings(){
+    // hide settings menu
+
+    // remove settings
+    QLayout *gridLayout2 = (QLayout *) gridLayout;
+    gridLayout2->removeWidget((QWidget *) settings);
+
+    // add movelist
+    gridLayout->addWidget(moveList,1,0,5,0);
+    moveList->show();
+    settingsBtn->setText("Open settings");
 }
 
 QPushButton* Sidebar::getBackButton(){
@@ -442,12 +500,25 @@ QPushButton* Sidebar::getGameOverButton(){
     return gameOverBtn;
 }
 
+QPushButton* Sidebar::getSettingsButton(){
+    return settingsBtn;
+}
+
 Sidebar::~Sidebar(){
     delete title;
     delete gameOverBtn;
+    delete error;
+    delete settings;
     delete bottom;
     delete back;
     delete forward;
     delete result;
     delete gridLayout;
+    delete moveList;
+    delete queen;
+    delete knight;
+    delete bishop;
+    delete rook;
+    delete gameOverBtn;
+    delete settingsBtn;
 }

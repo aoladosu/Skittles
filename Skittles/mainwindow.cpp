@@ -35,10 +35,7 @@ MainWindow::MainWindow(QWidget *parent): QMainWindow(parent)
 
     // initialize engine
     engine.init();
-
-    // get board value
-    short int value = engine.value();
-    sidebar->showValue(value);
+    toPlay = 0;
 
     //show layout
     QLayout *layout2 = (QLayout*) layout;
@@ -55,9 +52,6 @@ void MainWindow::buttonPressed(int id){
     short int special, pieceMoved, color, value, engineMove1, engineMove2;
     bool capture, check, checkmate;
     sidebar->hideError();
-    value = engine.value();
-    sidebar->showValue(value);
-
 
     if (firstClick == -1){
         // set first click and change button to select color
@@ -65,10 +59,12 @@ void MainWindow::buttonPressed(int id){
         QPalette pal = btn2->palette();
         pal.setColor(QPalette::Button, selectColor);
         btn2->setPalette(pal);
-        engine.genMovesForPiece(id, pMoves, cMoves, aMoves, true);
-        highlightButtons(pMoves, pMoveColor, true);
-        highlightButtons(aMoves, aMoveColor, true);
-        highlightButtons(cMoves, cMoveColor, true);
+        if (highlights){
+            engine.genMovesForPiece(id, pMoves, cMoves, aMoves, true);
+            highlightButtons(pMoves, pMoveColor, true);
+            highlightButtons(aMoves, aMoveColor, true);
+            highlightButtons(cMoves, cMoveColor, true);
+        }
         return;
     }
 
@@ -100,20 +96,18 @@ void MainWindow::buttonPressed(int id){
         engine.moveStats(pieceMoved, color, capture, check, checkmate);
         // get board value
         value = engine.value();
-        sidebar->showValue(value);
         handleMove(btn1, btn2, special, firstClick, secondClick, color);
         if (special != 1){
-            sidebar->addMove(pieceMoved, firstClick, secondClick, color, capture, check, checkmate, special, -1);
+            sidebar->addMove(pieceMoved, firstClick, secondClick, color, capture, check, checkmate, special, -1, value);
         }
         if (engine.gameOver()){
-            sidebar->hideValue();
             winner = engine.getWinner();
             reason = engine.getWinReason();
             sidebar->showGameOver(winner, reason);
         }
         sidebar->getBackButton()->setEnabled(true);
         sidebar->getForwardButton()->setEnabled(false);
-        if (check){
+        if (check && highlights){
             engine.checkPositions(chMoves);
             highlightButtons(chMoves, checkColor, true);
         }
@@ -121,28 +115,20 @@ void MainWindow::buttonPressed(int id){
             highlightButtons(chMoves, checkColor, false);
         }
 
-        if (enginePlay){
-            if(engineTurn){
-                engineTurn = false;
-            }
-            else{
-                engineTurn = true;
-                engine.getMove(engineMove1, engineMove2);
-                firstClick = engineMove1;
-                buttonPressed(engineMove2);
-            }
+        // change turn to play
+        toPlay = 1 - toPlay;
+        if (enginePlay && (engineColor == toPlay)){
+            // engine's turn to play
+            engine.getMove(engineMove1, engineMove2);
+            firstClick = engineMove1;
+            buttonPressed(engineMove2);
         }
 
     }
     else{
         short int err = engine.getErrorState();
         if ((err != 13) && (err > 3)){
-            sidebar->hideValue();
             sidebar->showError(err);
-        }
-        else{
-            value = engine.value();
-            sidebar->showValue(value);
         }
     }
 
@@ -162,7 +148,8 @@ void MainWindow::promotion(int id){
         promotionOpen = false;
         oldSpecial = -1;
         engine.moveStats(pieceMoved, color, capture, check, checkmate);
-        sidebar->addMove(pieceMoved, promotionStart, promotionPos, color, capture, check, checkmate, 1, id);
+        value = engine.value();
+        sidebar->addMove(pieceMoved, promotionStart, promotionPos, color, capture, check, checkmate, 1, id, value);
 
         QPushButton *btn = (QPushButton *) btnGroup.button(promotionPos);
 
@@ -189,15 +176,9 @@ void MainWindow::promotion(int id){
                 break;
         }
         if (engine.gameOver()){
-            sidebar->hideValue();
             winner = engine.getWinner();
             reason = engine.getWinReason();
             sidebar->showGameOver(winner, reason);
-        }
-        else{
-            // get board value
-            value = engine.value();
-            sidebar->showValue(value);
         }
     }
 }
@@ -205,8 +186,8 @@ void MainWindow::promotion(int id){
 void MainWindow::newGame(){
     // start a new game
 
-
     QPushButton *btn;
+    toPlay = 0;
     engine.init();
     setImages();
     sidebar->clearMovelist();
@@ -214,12 +195,20 @@ void MainWindow::newGame(){
     sidebar->getBackButton()->setEnabled(false);
     sidebar->getForwardButton()->setEnabled(false);
     sidebar->hideError();
-    short int value = engine.value();
-    sidebar->showValue(value);
     for (short int i=0; i<BOARDSIZE*BOARDSIZE; i++){
         btn = (QPushButton *) btnGroup.button(i);
         restoreButtonColor(btn, i);
     }
+
+    // if engine goes first
+    if (enginePlay && (engineColor == toPlay)){
+        short int engineMove1, engineMove2;
+        toPlay = 1 - toPlay;
+        engine.getMove(engineMove1, engineMove2);
+        firstClick = engineMove1;
+        buttonPressed(engineMove2);
+    }
+
 }
 
 void MainWindow::undoMove(){
@@ -257,17 +246,13 @@ void MainWindow::undoMove(){
         highlightButtons(chMoves, checkColor, true);
     }
 
-    // get board value
-    short int value = engine.value();
-    sidebar->showValue(value);
-
 }
 
 void MainWindow::redoMove(){
     // process redoing a move
 
     // variables to get info back
-    short int start, end, special, promoPiece, capturedPiece, color;
+    short int start, end, special, promoPiece, capturedPiece, color, value;
     engine.goForward(start, end, special, promoPiece, capturedPiece, color);
     sidebar->hideError();
 
@@ -294,7 +279,8 @@ void MainWindow::redoMove(){
     bool capture, check, checkmate;
 
     engine.moveStats(pieceMoved, color, capture, check, checkmate);
-    sidebar->addMove(pieceMoved, start, end, color, capture, check, checkmate, special, promoPiece);
+    value = engine.value();
+    sidebar->addMove(pieceMoved, start, end, color, capture, check, checkmate, special, promoPiece, value);
 
     if (check){
         engine.checkPositions(chMoves);
@@ -331,15 +317,9 @@ void MainWindow::redoMove(){
 
     // check if this move was a game over move
     if (engine.gameOver()){
-        sidebar->hideValue();
         winner = engine.getWinner();
         reason = engine.getWinReason();
         sidebar->showGameOver(winner, reason);
-    }
-    else{
-        // get board value
-        short int value = engine.value();
-        sidebar->showValue(value);
     }
 
     // check if forward and back buttons should be greyed out
@@ -361,13 +341,13 @@ void MainWindow::handleMove(QPushButton *btn1, QPushButton *btn2, short int spec
             break;
         case 1:
             // promotion
-            sidebar->hideValue();
             if (color == BLACK) sidebar->showPromotion(blackQueenIcon, blackKnightIcon, blackBishopIcon, blackRookIcon);
             else sidebar->showPromotion(whiteQueenIcon, whiteKnightIcon, whiteBishopIcon, whiteRookIcon);
             promotionOpen = true;
             promotionPos = end;
             promotionStart = start;
             promotionColor = color;
+            if ((color == engineColor) && (enginePlay)) promotion(5);
             break;
         case 2:
             // enpassant

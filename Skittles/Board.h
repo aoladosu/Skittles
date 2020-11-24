@@ -1,6 +1,7 @@
 #pragma once
 #include "ChessPiece.h"
 #include "MoveList.h"
+#include <QRandomGenerator>
 
 class Board
 {
@@ -143,6 +144,9 @@ private:
 
     // alpha beta depth
     short int MAXDEPTH = 4;
+    bool ALPHABETA = false;        // false is random, true is alpha beta
+    short int seed;
+    QRandomGenerator generator;
 
 public:
     Board();
@@ -165,6 +169,8 @@ public:
     bool genMovesForPiece(short int pos, short int moves[], short int cMoves[], short int aMoves[], bool extra);
     void checkPositions(short int pos[]);
     void getMove(short int &startPos, short int &endPos);
+    void setAlphaBeta(bool pol);
+    void setDepth(short int depth);
 
 private:
     bool pawnMoveValid(ChessPiece pawn, short int startRow, short int endRow, short int startCol, short int endCol);

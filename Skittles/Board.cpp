@@ -1,6 +1,8 @@
 #include "Board.h"
 #include <QtMath>
 
+#include <QDebug>
+
 Board::Board(){}
 Board::~Board(){}
 
@@ -39,6 +41,7 @@ void Board::init()
     assignArray(wkPos, 7, 4);
     moveList.clear();
     captured = ChessPiece();
+    generator.seed(seed++);
 }
 
 bool Board::validate(short int start, short int end)
@@ -1438,6 +1441,53 @@ void Board::getMove(short int &startPos, short int &endPos){
     // get a list of moves
     genMoves(moves);
 
+    if (!ALPHABETA){
+        // select a random move
+        short int moveCount=0;
+        start = moves[index];
+
+        while(start != -1){
+         // get move from list
+            end = moves[index];
+            index++;
+            if (end == -1){
+                start = moves[index];
+                index++;
+                continue;
+            }
+            moveCount++;
+        }
+
+        // pick random move
+        int num = generator.bounded(1, moveCount+1);
+        qDebug() << "generated num: " << num;
+        moveCount = 0;
+        index = 0;
+        start = moves[index];
+        while(start != -1){
+         // get move from list
+            end = moves[index];
+            index++;
+            if (end == -1){
+                start = moves[index];
+                index++;
+                continue;
+            }
+            moveCount++;
+            if (moveCount == num){
+                startPos = start;
+                endPos = end;
+                qDebug() << "picked randomly";
+                return;
+            }
+        }
+
+        qDebug() << "didn't pick randomly";
+        startPos = moves[0];
+        endPos = moves[1];
+        return;
+    }
+
     // iterate through all moves and get a value for each position
     start = moves[index];
     index++;
@@ -1904,6 +1954,16 @@ short int Board::value()
 void Board::switchToPlay()
 {
     toPlay = WHITE + BLACK - toPlay;
+}
+
+void Board::setAlphaBeta(bool pol){
+    // set policy to use for picking a move
+    ALPHABETA = pol;
+}
+
+void Board::setDepth(short int depth){
+    // set search depth
+    MAXDEPTH = depth;
 }
 
 bool Board::numToRowCol(short int start, short int end, short int &startRow, short int &endRow, short int &startCol, short int &endCol)
