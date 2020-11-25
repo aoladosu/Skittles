@@ -45,11 +45,13 @@ Sidebar::Sidebar(QWidget *parent) : QWidget(parent)
 
     // create layout elements
     // title
-    title = new QPushButton("Skittles", this);
+    QIcon logo = QIcon(":/buttonImages/logo");
+    title = new QPushButton(logo, "", this);
     QFont font = title->font();
     font.setPointSize(20);
     title->setFont(font);
-    createTitle();
+    title->setSizePolicy(sPolicy);
+    createInstructions();
 
     // error code
     error = new QLabel(this);
@@ -167,23 +169,23 @@ void Sidebar::createSettings(){
 
 
     // depth check boxes
-    checkbox = new QCheckBox("Alpha-Beta search depth of 1", this);
+    checkbox = new QCheckBox("Alpha-Beta search depth of 1 ply", this);
     checkbox->setChecked(true);
     settings->addWidget(checkbox, 7,0);
     depthBtnGroup.addButton(checkbox,1);
     checkbox->setSizePolicy(sPolicy);
 
-    checkbox = new QCheckBox("Alpha-Beta search depth of 2", this);
+    checkbox = new QCheckBox("Alpha-Beta search depth of 2 ply", this);
     settings->addWidget(checkbox, 8,0);
     depthBtnGroup.addButton(checkbox,2);
     checkbox->setSizePolicy(sPolicy);
 
-    checkbox = new QCheckBox("Alpha-Beta search depth of 3", this);
+    checkbox = new QCheckBox("Alpha-Beta search depth of 3 ply", this);
     settings->addWidget(checkbox, 9,0);
     depthBtnGroup.addButton(checkbox,3);
     checkbox->setSizePolicy(sPolicy);
 
-    checkbox = new QCheckBox("Alpha-Beta search depth of 4", this);
+    checkbox = new QCheckBox("Alpha-Beta search depth of 4 ply", this);
     settings->addWidget(checkbox, 10,0);
     depthBtnGroup.addButton(checkbox,4);
     checkbox->setSizePolicy(sPolicy);
@@ -192,7 +194,7 @@ void Sidebar::createSettings(){
 
 }
 
-void Sidebar::createTitle(){
+void Sidebar::createInstructions(){
     // create overview/instructions
 
     QSizePolicy sPolicy = QSizePolicy();
@@ -209,17 +211,14 @@ void Sidebar::createTitle(){
     instructions->setFont(font);
     instructions->setWordWrap(true);
     QString string = "Welcome to Skittles!\n\n"
-                     "Information:\n"
-                     "Click 'Start a new game' at the bottom To start a new game. "
-                     "Click 'Open settings' to customize board highlighting and agent behaviour. "
-                     "To close this help screen, click on 'Skittles' at the top. Click on it again to return here.\n\n"
-                     "How to Play:\n"
-                     "The goal of chess is the put the opponent's king in checkmate. Checkmate, is when the king has no moves to avoid capture. "
-                     "Starting with white, 2 players alternate turns in order to reach checkmate. Each piece type has a specific move set (blue). "
-                     "Certain moves allow you to capture other pieces (red). But be careful, as other pieces can capture yours (yellow). "
-                     "During play you may encounter check (orange) which you must get out of, or draw where neigther player wins. "
-                     "Inside the movelist, the value of the board is printed. A negative value, means black is in a better position generally, while positive favours white. "
-                     "Use the forward and back buttons below to modify your moves and see if there are better moves available.";
+                     "Highlight Legend:\n"
+                     "Green: piece selected\n"
+                     "Blue: piece's move set\n"
+                     "Red: piece can capture\n"
+                     "Yellow: can capture piece\n"
+                     "Orange: in check/checkmate\n\n"
+                     "Click 'Skittles' to exit/return\nto this page\n\n"
+                     "Customize agent in settings\n";
 
     instructions->setText(string);
 
@@ -694,6 +693,11 @@ void Sidebar::titleClicked(){
 
     titleOpen = !titleOpen;
 
+}
+
+void Sidebar::setTitleSize(){
+    QSize size = QSize(title->size().width(), title->size().height());
+    title->setIconSize(size);
 }
 
 QPushButton* Sidebar::getBackButton(){

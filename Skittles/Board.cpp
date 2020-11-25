@@ -1,8 +1,6 @@
 #include "Board.h"
 #include <QtMath>
 
-#include <QDebug>
-
 Board::Board(){}
 Board::~Board(){}
 
@@ -154,6 +152,8 @@ bool Board::validate(short int start, short int end)
     }
     return valid;
 }
+
+
 
 bool Board::pawnMoveValid(ChessPiece pawn, short int startRow, short int endRow, short int startCol, short int endCol)
 {
@@ -951,12 +951,12 @@ bool Board::genKingMoves(short int row, short int col, short int moves[]){
 
     // check castling to right
     if(inBounds(row,col+2)){
-        if (kingMoveValid(piece, row, row, col, col+2) && !isLeftInCheck(row, row, col, col+2, color, true)) moves[index++] = rowColToNum(row,col+2);
+        if (kingMoveValid(piece, row, row, col, col+2)) moves[index++] = rowColToNum(row,col+2);
     }
 
     // check castling to left
     if(inBounds(row,col-2)){
-        if (kingMoveValid(piece, row, row, col, col-2) && !isLeftInCheck(row, row, col, col-2, color, true)) moves[index++] = rowColToNum(row,col-2);
+        if (kingMoveValid(piece, row, row, col, col-2)) moves[index++] = rowColToNum(row,col-2);
     }
 
     moves[index] = -1;
@@ -1459,7 +1459,6 @@ void Board::getMove(short int &startPos, short int &endPos){
 
         // pick random move
         int num = generator.bounded(1, moveCount+1);
-        qDebug() << "generated num: " << num;
         moveCount = 0;
         index = 0;
         start = moves[index];
@@ -1476,12 +1475,9 @@ void Board::getMove(short int &startPos, short int &endPos){
             if (moveCount == num){
                 startPos = start;
                 endPos = end;
-                qDebug() << "picked randomly";
                 return;
             }
         }
-
-        qDebug() << "didn't pick randomly";
         startPos = moves[0];
         endPos = moves[1];
         return;

@@ -10,6 +10,8 @@
 #include <QButtonGroup>
 #include <QIcon>
 #include <QCheckBox>
+#include <QObject>
+#include <QEvent>
 
 class Sidebar : public QWidget
 {
@@ -55,7 +57,7 @@ private:
 
     // private functions
     void createSettings();
-    void createTitle();
+    void createInstructions();
     void showSettings();
     void hideSettings();
     void showMoveList();
@@ -84,6 +86,7 @@ public:
     void hideGameOver();
     void showError(short int err);
     void hideError();
+    void setTitleSize();
 
 signals:
 

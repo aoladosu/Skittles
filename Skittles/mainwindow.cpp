@@ -47,6 +47,7 @@ MainWindow::MainWindow(QWidget *parent): QMainWindow(parent)
     window->setLayout(layout2);
     window->show();
     sidebar->hidePromotion();
+    sidebar->setTitleSize();
 
 }
 

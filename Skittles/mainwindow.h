@@ -24,7 +24,7 @@ private:
 
     // layout/organization
     QWidget *window;
-    QButtonGroup btnGroup;
+    QButtonGroup btnGroup, btnGroup2;
     QGridLayout *layout;
     Sidebar *sidebar;
 

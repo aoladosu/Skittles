@@ -16,5 +16,6 @@
     <qresource prefix="/buttonImages">
         <file alias="back_arrow">transparent/back_arrow.png</file>
         <file alias="forward_arrow">transparent/forward_arrow.png</file>
+        <file alias="logo">transparent/skittles_logo.png</file>
     </qresource>
 </RCC>
