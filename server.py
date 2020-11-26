@@ -7,7 +7,7 @@ class MyWebServer(socketserver.BaseRequestHandler):
 
     status = {200: "HTTP/1.1 200 OK\r\n", 404:"HTTP/1.1 404 Page Not Found\r\n", 405:"HTTP/1.1 405 Method Not Allowed\r\n", 301:"HTTP/1.1 301 Page Moved\r\n"}
     hostname = "127.0.0.1:8000"
-    folder = "build-Skittles-Qt_5_15_1_WebAssembly-Release"
+    folder = "build-Skittles-Qt_5_15_1_WebAssembly-Debug"
     absPath = os.path.abspath(folder+"/")
     
     

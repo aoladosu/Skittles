@@ -29,4 +29,5 @@ public:
     void goBack(short int &start, short int &end, short int &special, short int &promoPiece, short int &capturedPiece, short int &color);           // go back one move
     void goForward(short int &start, short int &end, short int &special, short int &promoPiece, short int &capturedPiece, short int &color);        // go forward one move
     void moveStats(short int &pieceMoved, short int &color, bool &capture, bool &check, bool &checkmate);                                           // get statistics about last move
+    void print();
 };

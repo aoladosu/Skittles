@@ -171,6 +171,7 @@ public:
     void getMove(short int &startPos, short int &endPos);
     void setAlphaBeta(bool pol);
     void setDepth(short int depth);
+    void print();
 
 private:
     bool pawnMoveValid(ChessPiece pawn, short int startRow, short int endRow, short int startCol, short int endCol);

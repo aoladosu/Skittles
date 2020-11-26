@@ -1,8 +1,31 @@
 #include "Board.h"
 #include <QtMath>
 
+#include <QDebug>
+#include <QString>
+
 Board::Board(){}
 Board::~Board(){}
+
+
+void Board::print(){
+    QString string;
+    ChessPiece piece;
+
+    for (short int i=0; i<BOARDSIZE; i++){
+        string = "";
+        for (short int j=0; j<BOARDSIZE; j++){
+            piece = board[i][j];
+            if (piece.getColor() == BLACK){
+                string = string + QString::number(piece.getNameValue() * -1) + " ";
+            }
+            else string = string + QString::number(piece.getNameValue()) + " ";
+        }
+        qDebug() << string;
+    }
+
+    qDebug() << "---------";
+}
 
 void Board::init()
 {
@@ -94,6 +117,7 @@ bool Board::validate(short int start, short int end)
     assignArray(enPassantPosOld, enPassantPos[0], enPassantPos[1]);
     enPassantColorOld = enPassantColor;
 
+
     switch (piece.getNameValue()){
     case 1:
         valid = pawnMoveValid(piece, startRow, endRow, startCol, endCol);
@@ -139,9 +163,8 @@ bool Board::validate(short int start, short int end)
             currKing[1] = endCol;
         }
         switchToPlay();
-        short int temp[2] = { -2,-2 };
-        if (!areEqual(enPassantPos,temp) && (enPassantColor != piece.getColor())) {
-            assignArray(enPassantPos,temp[0],temp[1]);
+        if (enPassantColor != piece.getColor()) {
+            assignArray(enPassantPos,-2,-2);
             enPassantColor = -1;
         }
 
@@ -150,10 +173,9 @@ bool Board::validate(short int start, short int end)
         addMove(start, end);
         ERROR = none;
     }
+
     return valid;
 }
-
-
 
 bool Board::pawnMoveValid(ChessPiece pawn, short int startRow, short int endRow, short int startCol, short int endCol)
 {
@@ -212,7 +234,6 @@ bool Board::pawnMoveValid(ChessPiece pawn, short int startRow, short int endRow,
             valid = true;
         }
         else if ((piece.getNameValue() == EMPTY) && (enPassantColor != color)) {
-
             if (color == BLACK) {
                 if (((end[0] - 1) == enPassantPos[0]) && (end[1] == enPassantPos[1])){
                     specialMove = ENPASSANT;
@@ -429,6 +450,7 @@ void Board::movePiece(short int startRow, short int endRow, short int startCol, 
 {
     // move the chess piece to the new location
 
+    bool empty = board[endRow][endCol].getNameValue() == EMPTY;
     ChessPiece piece = board[startRow][startCol];
     movedPiece = piece;
     movedStore = piece.getMoved();
@@ -437,7 +459,8 @@ void Board::movePiece(short int startRow, short int endRow, short int startCol, 
     board[endRow][endCol] = piece;
     board[startRow][startCol] = ChessPiece();
 
-    // en passant, castling,
+    // en passant, castling
+    /*
     if (specialMove == ENPASSANT) {
         captured = board[startRow][endCol];
         board[startRow][endCol] = ChessPiece();
@@ -454,6 +477,27 @@ void Board::movePiece(short int startRow, short int endRow, short int startCol, 
         board[endRow][endCol - 1].setMoved(true);
         board[endRow][endCol + 1] = ChessPiece();
     }
+    */
+
+    if ((piece.getNameValue() == PAWN) && (empty) && (endCol != startCol)) {
+        // en passant
+        captured = board[startRow][endCol];
+        board[startRow][endCol] = ChessPiece();
+    }
+    else if ((piece.getNameValue() == KING) && (qFabs(endCol - startCol) == 2) && (endCol < startCol)) {
+        // queen side castle -> to left
+        board[endRow][endCol + 1] = board[endRow][endCol - 2];
+        board[endRow][endCol + 1].setMoved(true);
+        board[endRow][endCol - 2] = ChessPiece();
+    }
+    else if ((piece.getNameValue() == KING) && (qFabs(endCol - startCol) == 2) && (endCol > startCol)){
+        // king side castle -> to right
+        board[endRow][endCol - 1] = board[endRow][endCol + 1];
+        board[endRow][endCol - 1].setMoved(true);
+        board[endRow][endCol + 1] = ChessPiece();
+    }
+
+
     return;
 }
 
@@ -883,12 +927,11 @@ bool Board::isDraw(){
         }
     }
 
-
     // check for stalemate
     bPieces[bIndex++] = -1;
     wPieces[wIndex++] = -1;
-    if (toPlay == BLACK) STALEMATE = isStalemate(bPieces);
-    else STALEMATE = isStalemate(wPieces);
+    if (toPlay == BLACK) STALEMATE = isStalemate(wPieces);
+    else STALEMATE = isStalemate(bPieces);
     return STALEMATE;
 
 }
@@ -899,6 +942,11 @@ bool Board::isStalemate(short int pieces[]){
     short int row, col, row1, col1, index=0, moves[35];
     bool canMove = false;
     Error err=ERROR;
+    short int special = specialMove, enPassantColor2 = enPassantColor;
+    short int promotionPos2[2], enPassantPos2[2];
+
+    assignArray(promotionPos2, promotionPos[0], promotionPos[1]);
+    assignArray(enPassantPos2, enPassantPos[0], enPassantPos[1]);
 
     while (pieces[index] != -1){
         numToRowCol(pieces[index], 0, row, row1, col, col1);
@@ -922,10 +970,22 @@ bool Board::isStalemate(short int pieces[]){
                 canMove = genKingMoves(row, col, moves);
                 break;
         }
+
         index += 1;
+        ERROR=err;
+        specialMove = special;
+        enPassantColor = enPassantColor2;
+        assignArray(promotionPos, promotionPos2[0], promotionPos2[1]);
+        assignArray(enPassantPos, enPassantPos2[0], enPassantPos2[1]);
         if (canMove) return false;
     }
+
     ERROR=err;
+    specialMove = special;
+    enPassantColor = enPassantColor2;
+    assignArray(promotionPos, promotionPos2[0], promotionPos2[1]);
+    assignArray(enPassantPos, enPassantPos2[0], enPassantPos2[1]);
+
     return true;
 }
 
@@ -1090,7 +1150,6 @@ bool Board::genPawnMoves(short int row, short int col, short int moves[]){
     short int prowPos[8] = { static_cast<short>(row - 1), static_cast<short>(row + 1), static_cast<short>(row - 2), static_cast<short>(row + 2), static_cast<short>(row - 1), static_cast<short>(row + 1), static_cast<short>(row - 1), static_cast<short>(row + 1) };
     short int pcolPos[8] = { static_cast<short>(col), static_cast<short>(col), static_cast<short>(col), static_cast<short>(col), static_cast<short>(col + 1), static_cast<short>(col + 1), static_cast<short>(col - 1), static_cast<short>(col - 1) };
 
-
     for (short int i =0, j,k; i<8; i++){
         j = prowPos[i];
         k = pcolPos[i];
@@ -1104,12 +1163,12 @@ bool Board::genPawnMoves(short int row, short int col, short int moves[]){
         }
     }
 
-
     moves[index] = -1;
     specialMove = special;
     enPassantColor = enPassantColor2;
     assignArray(promotionPos, promotionPos2[0], promotionPos2[1]);
     assignArray(enPassantPos, enPassantPos2[0], enPassantPos2[1]);
+
     return (index != 0);
 
 }
@@ -1165,7 +1224,7 @@ void Board::goBack(short int &start, short int &end, short int &special, short i
     end = move->end;
     special = move->specialMove;
     promoPiece = move->promoTo;
-    ChessPiece captPiece = ChessPiece(move->piece);
+    ChessPiece captPiece = move->piece;
     capturedPiece = captPiece.getNameValue();
 
     // set board variables back
@@ -1196,7 +1255,7 @@ void Board::goBack(short int &start, short int &end, short int &special, short i
     board[startRow][startCol] = board[endRow][endCol];
     board[startRow][startCol].setMoved(move->moved);
     movedPiece = board[startRow][startCol];
-    captured = ChessPiece();
+    captured = ChessPiece(); //captPiece;
 
     if (specialmv == ENPASSANT){
         if (board[startRow][startCol].getColor() == BLACK){
@@ -1419,6 +1478,20 @@ void Board::genMoves(short int moves[]){
     moves[index++] = -1;
     moves[index] = -1;
 
+
+    /*
+    QString string;
+
+    index = 0;
+    while ((moves[index] != -1) || (moves[index+1] != -1)){
+        string = string + QString::number(moves[index]) + "|";
+        index++;
+    }
+
+    qDebug() << string;
+    */
+
+
 }
 
 void Board::getMove(short int &startPos, short int &endPos){
@@ -1441,10 +1514,11 @@ void Board::getMove(short int &startPos, short int &endPos){
     genMoves(moves);
 
     if (!ALPHABETA){
+
         // select a random move
         short int moveCount=0;
         start = moves[index];
-
+        index++;
         while(start != -1){
          // get move from list
             end = moves[index];
@@ -1458,10 +1532,16 @@ void Board::getMove(short int &startPos, short int &endPos){
         }
 
         // pick random move
+        if (moveCount == 0){
+            startPos = -1;
+            endPos = -1;
+        }
         int num = generator.bounded(1, moveCount+1);
+
         moveCount = 0;
         index = 0;
         start = moves[index];
+        index++;
         while(start != -1){
          // get move from list
             end = moves[index];
@@ -1502,7 +1582,7 @@ void Board::getMove(short int &startPos, short int &endPos){
         // evaluate move, if a better move, pick it
         if (color == BLACK){
             eval = alphabeta(1, -1000, 1000, false);
-            goBack(s1,e1, sp1, p1, cp1, c1);
+            goBack(s1, e1, sp1, p1, cp1, c1);
             if (eval <= stateValue){
                 stateValue = eval;
                 startPos = start;
@@ -1511,7 +1591,7 @@ void Board::getMove(short int &startPos, short int &endPos){
         }
         else {
             eval = alphabeta(1, -1000, 1000, true);
-            goBack(s1,e1, sp1, p1, cp1, c1);
+            goBack(s1, e1, sp1, p1, cp1, c1);
             if (eval >= stateValue){
                 stateValue = eval;
                 startPos = start;
@@ -1527,37 +1607,16 @@ short int Board::alphabeta(short int depth, short int alpha, short int beta, boo
     // alpha beta search
     // algorithm from wikipedia alpha beta pruning. https://en.wikipedia.org/wiki/Alpha%E2%80%93beta_pruning
 
-    /*
-    function alphabeta(node, depth, α, β, maximizingPlayer) is
-    if depth = 0 or node is a terminal node then
-        return the heuristic value of node
-    if maximizingPlayer then
-        value := −∞
-        for each child of node do
-            value := max(value, alphabeta(child, depth − 1, α, β, FALSE))
-            α := max(α, value)
-            if α ≥ β then
-                break (* β cutoff *)
-        return value
-    else
-        value := +∞
-        for each child of node do
-            value := min(value, alphabeta(child, depth − 1, α, β, TRUE))
-            β := min(β, value)
-            if β ≤ α then
-                break (* α cutoff *)
-        return value
-
-    */
-
     short int stateValue, start, end, index=0;
     short int moves[175];
     short int s1, e1, sp1, p1, cp1, c1;
     // terminal node or reached max search depth
-    if ((depth == MAXDEPTH) || MATE || DRAW) return value();
 
     // promotion
     if (specialMove == PROMOTION) promote(QUEEN);
+
+    if ((depth == MAXDEPTH) || MATE || DRAW) return value();
+
 
     // try to maximize score
     if (maxPlayer){
@@ -1566,6 +1625,7 @@ short int Board::alphabeta(short int depth, short int alpha, short int beta, boo
         start = moves[index];
         index++;
         while (start != -1){
+            // pick move
             end = moves[index];
             index++;
             if (end == -1){
@@ -1573,6 +1633,7 @@ short int Board::alphabeta(short int depth, short int alpha, short int beta, boo
                 index++;
                 continue;
             }
+            // evaluate
             forceMove(start, end);
             stateValue = qMax(stateValue, alphabeta(depth+1, alpha, beta, false));
             goBack(s1,e1, sp1, p1, cp1, c1);
@@ -1589,6 +1650,7 @@ short int Board::alphabeta(short int depth, short int alpha, short int beta, boo
         start = moves[index];
         index++;
         while (start != -1){
+            // pick move
             end = moves[index];
             index++;
             if (end == -1){
@@ -1596,6 +1658,7 @@ short int Board::alphabeta(short int depth, short int alpha, short int beta, boo
                 index++;
                 continue;
             }
+            // evaluate
             forceMove(start, end);
             stateValue = qMin(stateValue, alphabeta(depth+1, alpha, beta, true));
             goBack(s1,e1, sp1, p1, cp1, c1);
@@ -1644,10 +1707,10 @@ void Board::forceMove(short int start, short int end){
     }
     else if (piece.getNameValue() == KING){
         // castling cases
-        if ((startRow == 7) && (endCol == 6)) specialMove = WKCASTLE;
-        else if ((startRow == 7) && (endCol == 2)) specialMove = WQCASTLE;
-        else if ((startRow == 0) && (endCol == 6)) specialMove = BKCASTLE;
-        else if ((startRow == 0) && (endCol == 2)) specialMove = BQCASTLE;
+        if ((startRow == 7) && (endCol == 6) && (startCol == 4)) specialMove = WKCASTLE;
+        else if ((startRow == 7) && (endCol == 2) && (startCol == 4)) specialMove = WQCASTLE;
+        else if ((startRow == 0) && (endCol == 6) && (startCol == 4)) specialMove = BKCASTLE;
+        else if ((startRow == 0) && (endCol == 2) && (startCol == 4)) specialMove = BQCASTLE;
 
         // update king's position
         currKing[0] = endRow;
@@ -1667,9 +1730,8 @@ void Board::forceMove(short int start, short int end){
     MATE = CHECK && STALEMATE;
 
     switchToPlay();
-    short int temp[2] = { -2,-2 };
-    if (!areEqual(enPassantPos,temp) && (enPassantColor != piece.getColor())) {
-        assignArray(enPassantPos,temp[0],temp[1]);
+    if (enPassantColor != piece.getColor()) {
+        assignArray(enPassantPos,-2,-2);
         enPassantColor = -1;
     }
 

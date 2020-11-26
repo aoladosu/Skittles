@@ -33,6 +33,7 @@ Move* MoveList::getPrevious(){
     if ((((current + 1) % maxSize) != start) && (!isEmpty)){
         move = &cirQueue[current];
         current = (current - 1) % maxSize;
+        if (current == -1) current = maxSize - 1;
     }
 
     return move;
@@ -48,6 +49,7 @@ Move* MoveList::getNext(){
 
     current = ((current + 1) % maxSize);
     Move *move = &cirQueue[current];
+
     return move;
 
 }

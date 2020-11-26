@@ -84,3 +84,7 @@ bool Engine::genMovesForPiece(short int pos, short int moves[], short int cMoves
 void Engine::checkPositions(short int pos[]){
     return board.checkPositions(pos);
 }
+
+void Engine::print(){
+    board.print();
+}

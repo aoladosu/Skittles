@@ -1,12 +1,11 @@
 #include "mainwindow.h"
-//#include "ui_mainwindow.h"
 #include <QLayout>
 #include <Qt>
 #include <QSizePolicy>
+#include <QLabel>
 
 MainWindow::MainWindow(QWidget *parent): QMainWindow(parent)
 {
-    //ui->setupUi(this);ui(new Ui::MainWindow)
 
     window = new QWidget();
     layout = new QGridLayout(this);
@@ -62,14 +61,16 @@ void MainWindow::buttonPressed(int id){
     if (firstClick == -1){
         // set first click and change button to select color
         firstClick = id;
-        QPalette pal = btn2->palette();
-        pal.setColor(QPalette::Button, selectColor);
-        btn2->setPalette(pal);
-        if (highlights){
-            engine.genMovesForPiece(id, pMoves, cMoves, aMoves, true);
-            highlightButtons(pMoves, pMoveColor, true);
-            highlightButtons(aMoves, aMoveColor, true);
-            highlightButtons(cMoves, cMoveColor, true);
+        if (id != -1){
+            QPalette pal = btn2->palette();
+            pal.setColor(QPalette::Button, selectColor);
+            btn2->setPalette(pal);
+            if (highlights){
+                engine.genMovesForPiece(id, pMoves, cMoves, aMoves, true);
+                highlightButtons(pMoves, pMoveColor, true);
+                highlightButtons(aMoves, aMoveColor, true);
+                highlightButtons(cMoves, cMoveColor, true);
+            }
         }
         return;
     }
@@ -106,7 +107,7 @@ void MainWindow::buttonPressed(int id){
         if (special != 1){
             sidebar->addMove(pieceMoved, firstClick, secondClick, color, capture, check, checkmate, special, -1, value);
         }
-        if (engine.gameOver()){
+        if (false && engine.gameOver()){
             winner = engine.getWinner();
             reason = engine.getWinReason();
             sidebar->showGameOver(winner, reason);
@@ -123,7 +124,7 @@ void MainWindow::buttonPressed(int id){
 
         // change turn to play
         toPlay = 1 - toPlay;
-        if (enginePlay && (engineColor == toPlay)){
+        if (enginePlay && (engineColor == toPlay) && (!engine.gameOver())){
             // engine's turn to play
             engine.getMove(engineMove1, engineMove2);
             firstClick = engineMove1;
@@ -206,6 +207,8 @@ void MainWindow::newGame(){
         restoreButtonColor(btn, i);
     }
 
+    firstClick = -1;
+    secondClick = -1;
     // if engine goes first
     if (enginePlay && (engineColor == toPlay)){
         short int engineMove1, engineMove2;
@@ -218,6 +221,7 @@ void MainWindow::newGame(){
 
 void MainWindow::undoMove(){
     // process undoing a move
+
 
     // variables to get info back
     short int start, end, special, promoPiece, capturedPiece, color;
@@ -791,6 +795,12 @@ void MainWindow::addLabels(){
     }
 
     insertLabels(sPolicy, QString("a1"), 7, 0);
+
+    /*
+    for (short int i=0; i<BOARDSIZE*BOARDSIZE; i++){
+        insertLabels(sPolicy, QString::number(i), i/BOARDSIZE, i%BOARDSIZE);
+    }
+    */
 
 }
 
