@@ -551,16 +551,16 @@ void Sidebar::hideError(){
 void Sidebar::showGameOver(short int winner, short int reason){
     // show game over
     if (winner == 1){
-        gameOverBtn->setText("Black Wins!\n\n0 - 1\n(Click for new game)");
+        gameOverBtn->setText("Black Wins! 0 - 1\n(Click for new game)");
     }
     else if (winner == 0){
-        gameOverBtn->setText("White Wins!\n\n1 - 0\n(Click for new game)");
+        gameOverBtn->setText("White Wins! 1 - 0\n(Click for new game)");
     }
     else if (reason == 1){
-        gameOverBtn->setText("Draw - Stalemate!\n\n1/2 - 1/2\n(Click for new game)");
+        gameOverBtn->setText("Draw - Stalemate! 1/2 - 1/2\n(Click for new game)");
     }
     else{
-        gameOverBtn->setText("Draw - Insufficient Material!\n\n1/2 - 1/2\n(Click for new game)");
+        gameOverBtn->setText("Draw - Insufficient Material! 1/2 - 1/2\n(Click for new game)");
     }
     //gameOverBtn->show();
     //result->addWidget(gameOverBtn, 0, 0);

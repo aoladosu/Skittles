@@ -1876,11 +1876,11 @@ short int Board::value()
     short int row, col, row1, col1;
     short int p1,p2,p3;
 
-    if (DRAW) return 0;
     if (MATE){
         if (toPlay == BLACK) return 900;
         return -900;
     }
+    if (DRAW) return 0;
 
     for (short int i=0; i<BOARDSIZE; i++){
         for(short j=0; j<BOARDSIZE; j++){

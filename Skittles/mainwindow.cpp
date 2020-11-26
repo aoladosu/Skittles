@@ -107,7 +107,7 @@ void MainWindow::buttonPressed(int id){
         if (special != 1){
             sidebar->addMove(pieceMoved, firstClick, secondClick, color, capture, check, checkmate, special, -1, value);
         }
-        if (false && engine.gameOver()){
+        if (engine.gameOver()){
             winner = engine.getWinner();
             reason = engine.getWinReason();
             sidebar->showGameOver(winner, reason);
